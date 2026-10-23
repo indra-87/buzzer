@@ -13,7 +13,7 @@
     --bg:#fff8ec; --card:#ffffff; --ink:#2d2a32; --muted:#8a8494;
     --red:#ff4d4d; --red-dark:#c92f2f; --green:#2fbf71; --green-dark:#1f8f53;
     --gray:#c9c4d1; --gray-dark:#9c96a6; --blue:#3b82f6; --yellow:#ffc53d; --yellow-dark:#d99a0b;
-    --line:#ece6dc;
+    --lock:#6f6880; --lock-dark:#4d475b; --line:#ece6dc;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;min-height:100%}
@@ -22,14 +22,23 @@
   .screen{display:none;width:100%;max-width:1000px;padding:16px;flex:1;flex-direction:column;align-items:center}
   .screen.on{display:flex}
   h1{font-size:2.4rem;margin:24px 0 8px;font-weight:normal}
+  h2{font-weight:normal;margin:0}
+  h3{font-weight:normal;margin:18px 0 8px}
   .sub{color:var(--muted);margin:0 0 24px;text-align:center}
+  .muted{color:var(--muted)}
   .card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:20px;width:100%}
   .btn{font-family:inherit;font-size:1.3rem;border:none;border-radius:16px;padding:16px 22px;cursor:pointer;
        color:#fff;background:var(--blue);box-shadow:0 5px 0 rgba(0,0,0,.18);transition:transform .05s,opacity .15s}
   .btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
   .btn.red{background:var(--red)} .btn.green{background:var(--green)} .btn.gray{background:var(--gray-dark)}
   .btn.yellow{background:var(--yellow);color:#4a3500}
+  .btn.mini{font-size:1rem;padding:9px 14px;background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 3px 0 var(--line)}
+  .btn.danger{background:var(--red)!important}
+  .btn.mini.guard{background:#e8f8ef;border-color:#bfe9d1;color:var(--green-dark);box-shadow:0 3px 0 #bfe9d1}
+  .btn.mini.guard.off{background:#f1eef5;border-color:var(--line);color:var(--muted);box-shadow:0 3px 0 var(--line)}
   .btn:disabled{opacity:.35;cursor:default}
+  .linkbtn{font-family:inherit;font-size:.95rem;background:none;border:none;color:var(--blue);cursor:pointer;padding:4px 8px}
+  .linkbtn:disabled{color:var(--gray);cursor:default}
   input{font-family:inherit;font-size:1.4rem;padding:14px;border-radius:14px;border:2px solid var(--line);width:100%;text-align:center;background:#fff;color:var(--ink)}
   input:focus{outline:none;border-color:var(--blue)}
   label{display:block;margin:12px 0 6px;color:var(--muted)}
@@ -41,21 +50,27 @@
   .role small{display:block;font-size:1rem;opacity:.85;margin-top:6px}
 
   /* 교사 */
+  .t-bar{display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .t-title{font-size:1.6rem}
+  .t-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .t-top{display:grid;grid-template-columns:1fr auto;gap:16px;width:100%;align-items:stretch}
   .code-label{color:var(--muted)}
   .code{font-size:4rem;letter-spacing:.15em;line-height:1;margin-top:6px}
   .link{color:var(--muted);font-size:.85rem;word-break:break-all;font-family:system-ui,sans-serif;margin-top:6px}
-  #qr{background:#fff;padding:8px;border-radius:12px}
-  #qr img,#qr canvas{display:block}
+  .qr-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:zoom-in;padding:12px 16px}
+  .qr-card:hover{border-color:var(--blue)}
+  #qr{background:#fff;padding:6px;border-radius:12px}
+  #qr img,#qr canvas,#qr-big img,#qr-big canvas{display:block}
   .main{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;width:100%;margin-top:16px}
   .stage{border-radius:24px;padding:24px 16px;text-align:center;min-height:280px;
          display:flex;flex-direction:column;justify-content:center;align-items:center;transition:background .2s}
-  .stage.idle{background:#efeaf4} .stage.open{background:#ffe1e1} .stage.answering{background:#d9f7e6} .stage.done{background:#c9f2db}
+  .stage.idle{background:#efeaf4} .stage.ready{background:#fff1c9} .stage.open{background:#ffe1e1}
+  .stage.answering{background:#d9f7e6} .stage.done{background:#c9f2db}
   .stage .msg{font-size:1.5rem;color:var(--muted)}
   .stage .winner{font-size:clamp(3rem,9vw,6rem);line-height:1.1;margin:8px 0}
   .stage .time{color:var(--muted);font-size:1.1rem}
   .rank{padding:16px}
-  .rank h3{margin:0 0 10px;font-weight:normal}
+  .rank h3{margin:0 0 10px}
   .rank ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
   .rank li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;background:#f6f3fa;font-size:1.25rem}
   .rank li .n{width:2.2em;color:var(--muted)}
@@ -63,21 +78,51 @@
   .rank li .ms{color:var(--muted);font-size:.95rem}
   .rank li.cur{background:var(--green);color:#fff} .rank li.cur .n,.rank li.cur .ms{color:#eafff3}
   .rank li.wrong .nm{text-decoration:line-through;color:var(--muted)}
-  .rank li.right{background:var(--green);color:#fff}
-  .rank .empty{color:var(--muted)}
+  .rank li.right{background:var(--green);color:#fff} .rank li.right .n,.rank li.right .ms{color:#eafff3}
   .controls{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:16px;width:100%}
   .controls .btn{font-size:1.3rem;padding:18px 8px}
   .hint{color:var(--muted);font-size:.9rem;margin-top:8px;text-align:center}
   .students{margin-top:16px}
-  .students h3{margin:0 0 10px;font-weight:normal}
+  .students h3{margin:0 0 10px}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{background:#f4f0fa;border-radius:999px;padding:6px 14px;font-size:1.1rem}
   .chip.pressed{background:#fff0c2}
   .chip.cur{background:var(--green);color:#fff}
+  .chip.locked{background:#e4e0ea;color:var(--lock-dark)}
+  .chip.off{opacity:.45;cursor:pointer;text-decoration:line-through}
   .empty{color:var(--muted)}
   .status{font-size:.95rem;padding:4px 12px;border-radius:999px;background:#eee;color:var(--muted);white-space:nowrap}
   .status.ok{background:#d9f7e6;color:var(--green-dark)}
   .status.bad{background:#ffe1e1;color:var(--red-dark)}
+
+  /* 모달 */
+  .modal{position:fixed;inset:0;background:rgba(30,25,40,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+  .modal.on{display:flex}
+  .modal-box{background:var(--card);border-radius:22px;padding:20px;width:100%;max-width:600px;max-height:calc(100vh - 32px);overflow:auto}
+  .modal-box.wide{max-width:900px}
+  .m-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .x{font-family:inherit;font-size:1.4rem;background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 10px}
+  .qr-big{background:#fff;border-radius:24px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:zoom-out;max-width:100%}
+  .big-code{font-size:clamp(2rem,6vw,3.6rem)} .big-code b{letter-spacing:.12em;font-weight:normal;color:var(--blue)}
+  .seg{display:inline-flex;flex-wrap:wrap;gap:6px}
+  .seg button{font-family:inherit;font-size:1.05rem;padding:9px 14px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .seg button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .set-item{padding:14px 0;border-bottom:1px solid var(--line)}
+  .set-item:last-child{border-bottom:none}
+  .set-item.dim{opacity:.4;pointer-events:none}
+  .set-t{font-size:1.2rem} .set-d{color:var(--muted);font-size:.95rem;margin:4px 0 10px;line-height:1.4}
+  .m-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0}
+  .tbl-wrap{max-height:38vh;overflow:auto;border:2px solid var(--line);border-radius:14px}
+  table{width:100%;border-collapse:collapse;font-size:1.05rem}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{color:var(--muted);font-weight:normal;position:sticky;top:0;background:var(--card)}
+  .c{text-align:center}
+  td.ord{color:var(--muted);font-size:.95rem}
+  tr:last-child td{border-bottom:none}
+  .del{font-family:inherit;background:none;border:none;color:var(--gray-dark);cursor:pointer;font-size:1rem}
+  .del:hover{color:var(--red-dark)}
+  .m-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .m-actions .btn{font-size:1.1rem;padding:12px 18px}
 
   /* 학생 */
   .s-head{display:flex;justify-content:space-between;align-items:center;width:100%;gap:8px}
@@ -89,16 +134,24 @@
   #buzz.armed{background:var(--red);box-shadow:0 14px 0 var(--red-dark);animation:pulse 1s infinite}
   #buzz.armed:active,#buzz.sent{transform:translateY(10px);box-shadow:0 4px 0 var(--red-dark)}
   #buzz.sent{background:var(--red);animation:none}
+  #buzz.ready{background:#ffe08a;box-shadow:0 14px 0 var(--yellow-dark);color:#6b4d00}
   #buzz.wait{background:var(--yellow);box-shadow:0 14px 0 var(--yellow-dark);color:#4a3500}
   #buzz.win{background:var(--green);box-shadow:0 14px 0 var(--green-dark);animation:pop .4s}
   #buzz.lose{background:var(--gray);box-shadow:0 14px 0 var(--gray-dark)}
+  #buzz.locked{background:var(--lock);box-shadow:0 14px 0 var(--lock-dark);animation:shake .3s}
   @keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
   @keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+  @keyframes shake{0%,100%{translate:0}25%{translate:-8px}75%{translate:8px}}
   .s-msg{font-size:1.5rem;text-align:center;min-height:2.2em}
+  #confirm{position:fixed;inset:0;background:rgba(30,25,40,.6);display:none;z-index:60;touch-action:none}
+  #confirm.on{display:block}
+  #confirm .cbox{position:absolute;width:220px;background:#fff;border-radius:18px;padding:14px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  #confirm .cbox p{margin:0 0 10px;font-size:1.15rem}
+  #confirm-btn{width:100%;font-size:1.3rem;padding:12px}
+  #confirm-btn.wait{opacity:.3;pointer-events:none}
 
   @media (max-width:760px){
     .t-top,.main{grid-template-columns:1fr}
-    #qr{justify-self:center}
     .code{font-size:3rem}
     .roles{grid-template-columns:1fr}
     .controls{grid-template-columns:1fr 1fr}
@@ -133,16 +186,26 @@
 
 <!-- 교사 -->
 <section id="teacher" class="screen">
+  <div class="t-bar">
+    <div class="t-title">🔔 우리반 버저</div>
+    <div class="t-tools">
+      <span id="t-status" class="status">연결 중…</span>
+      <button class="btn mini guard" id="b-guard" onclick="toggleGuard()" title="미리 누르기 방지 켜기/끄기 (P)"></button>
+      <button class="btn mini" onclick="openLog()">📋 기록·점수</button>
+      <button class="btn mini" onclick="openModal('m-set')">⚙ 설정</button>
+    </div>
+  </div>
+
   <div class="t-top">
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span class="code-label">방 번호</span>
-        <span id="t-status" class="status">연결 중…</span>
-      </div>
+      <span class="code-label">방 번호</span>
       <div class="code" id="t-code">----</div>
       <div class="link" id="t-link"></div>
     </div>
-    <div class="card" style="display:flex;align-items:center;justify-content:center"><div id="qr"></div></div>
+    <div class="card qr-card" onclick="openQR()" title="QR코드 크게 보기 (Q)">
+      <div id="qr"></div>
+      <span class="muted" style="font-size:.95rem">🔍 크게 보기</span>
+    </div>
   </div>
 
   <div class="main">
@@ -153,7 +216,7 @@
     </div>
     <div class="card rank">
       <h3>누른 순서</h3>
-      <ol id="t-rank"><li class="empty" style="background:none">아직 아무도 안 눌렀어요</li></ol>
+      <ol id="t-rank"></ol>
     </div>
   </div>
 
@@ -163,11 +226,14 @@
     <button class="btn yellow" id="b-wrong" onclick="markWrong()" disabled>❌ 오답 → 다음</button>
     <button class="btn gray" id="b-reset" onclick="resetRound()">↺ 초기화</button>
   </div>
-  <div class="hint">키보드: <b>스페이스</b> 버저 켜기 · <b>O</b> 정답 · <b>X</b> 오답 · <b>R</b> 초기화</div>
+  <div class="hint">
+    키보드: <b>스페이스</b> 버저 켜기 · <b>O</b> 정답 · <b>X</b> 오답 · <b>R</b> 초기화 · <b>Q</b> QR 크게 · <b>P</b> 미리누르기 방지
+    <button class="linkbtn" id="b-undo" onclick="undo()" disabled>↶ 판정 되돌리기 (Z)</button>
+  </div>
 
   <div class="card students">
-    <h3>접속한 학생 <span id="t-count">0</span>명</h3>
-    <div class="chips" id="t-list"><span class="empty">아직 아무도 없어요. 방 번호를 알려주세요!</span></div>
+    <h3>접속한 학생 <span id="t-count">0</span>명<span class="muted" id="t-off" style="font-size:1rem"></span></h3>
+    <div class="chips" id="t-list"></div>
   </div>
 </section>
 
@@ -179,9 +245,76 @@
   </div>
   <div class="buzz-wrap">
     <button id="buzz">잠깐!</button>
-    <div class="s-msg" id="s-msg">선생님이 버저를 켜면 누를 수 있어요</div>
+    <div class="s-msg" id="s-msg">선생님이 버저를 켜면 눌러요</div>
   </div>
 </section>
+<div id="confirm">
+  <div class="cbox" id="confirm-box">
+    <p>미리 눌렀어요! ✋</p>
+    <button class="btn" id="confirm-btn">확인</button>
+  </div>
+</div>
+
+<!-- 모달: QR 크게 -->
+<div class="modal" id="m-qr" onclick="closeModal()">
+  <div class="qr-big">
+    <div id="qr-big"></div>
+    <div class="big-code">방 번호 <b id="big-code"></b></div>
+    <div class="link" id="big-link"></div>
+    <div class="muted">아무 곳이나 누르면 닫혀요</div>
+  </div>
+</div>
+
+<!-- 모달: 기록·점수 -->
+<div class="modal" id="m-log" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box wide">
+    <div class="m-head"><h2>📋 기록·점수</h2><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="m-row">
+      <span>오답 감점</span>
+      <div class="seg" data-k="wrongMinus"><button data-v="false">감점 없음</button><button data-v="true">오답 −1점</button></div>
+      <span class="muted" id="score-rule"></span>
+    </div>
+    <h3>점수표</h3>
+    <div class="tbl-wrap"><table id="score-tbl"></table></div>
+    <h3>문제별 기록 <span class="muted" id="q-count"></span></h3>
+    <div class="tbl-wrap"><table id="q-tbl"></table></div>
+    <div class="m-actions">
+      <button class="btn green" onclick="downloadCSV()">⬇ 엑셀(CSV)로 저장</button>
+      <button class="btn gray" id="b-clear" onclick="clearLog()">🗑 기록 모두 지우기</button>
+    </div>
+    <div class="hint" style="text-align:left">기록은 이 컴퓨터의 브라우저에 저장돼서 새로고침해도 남아 있어요. 잘못 판정한 문제는 ✕로 지울 수 있어요.</div>
+  </div>
+</div>
+
+<!-- 모달: 설정 -->
+<div class="modal" id="m-set" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="m-head"><h2>⚙ 설정</h2><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="set-item">
+      <div class="set-t">미리 누르기 방지</div>
+      <div class="set-d">끄면 버저가 켜지기 전에 눌러도 아무 일도 없어요. 연습하거나 마음껏 연타하며 놀 때 좋아요. 메인 화면 위쪽 버튼(단축키 P)으로도 바로 켜고 끌 수 있어요.</div>
+      <div class="seg" data-k="guard"><button data-v="true">켜기</button><button data-v="false">끄기</button></div>
+    </div>
+    <div class="set-item" id="set-penalty">
+      <div class="set-t">방지 방법</div>
+      <div class="set-d">버저가 켜지기 전(문제 사이, 준비 중)에 누르면 어떻게 할까요?</div>
+      <div class="seg" data-k="penalty">
+        <button data-v="time">⏸ 잠깐 멈춤</button>
+        <button data-v="confirm">✅ 확인 버튼 찾기</button>
+      </div>
+    </div>
+    <div class="set-item" id="set-locksec">
+      <div class="set-t">멈추는 시간</div>
+      <div class="set-d">멈춘 동안 또 누르면 시간이 처음부터 다시 시작돼요. 계속 연타하는 학생은 버저가 켜져도 멈춰 있어요.</div>
+      <div class="seg" data-k="lockSec"><button data-v="2">2초</button><button data-v="3">3초</button><button data-v="5">5초</button></div>
+    </div>
+    <div class="set-item">
+      <div class="set-t">랜덤 준비 시간</div>
+      <div class="set-d">버저 켜기를 누르면 '준비…'가 1~2.5초 동안 나온 뒤 켜져요. 켜지는 순간을 예측할 수 없어서, 선생님 손을 보고 타이밍 맞춰 누르기를 막아줘요.</div>
+      <div class="seg" data-k="readyDelay"><button data-v="true">켜기</button><button data-v="false">끄기</button></div>
+    </div>
+  </div>
+</div>
 
 <script>
 const PREFIX = 'elem-class-buzzer-v1-';
@@ -191,6 +324,13 @@ function randCode(){ return String(Math.floor(1000 + Math.random()*9000)); }
 function setStatus(el, text, kind){ el.textContent = text; el.className = 'status ' + (kind||''); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 const sec = ms => (ms/1000).toFixed(2) + '초';
+const nameKey = n => String(n).replace(/\s+/g,'').toLowerCase();
+function load(k, def){ try{ const v = JSON.parse(localStorage.getItem(k)); return v == null ? def : v; }catch(e){ return def; } }
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+const NET_ERR = ['network','server-error','socket-error','socket-closed'];
+
+let wakeLock = null;
+async function keepAwake(){ try{ if ('wakeLock' in navigator && document.visibilityState === 'visible') wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
 
 /* ---------------- 소리 ---------------- */
 let actx;
@@ -213,112 +353,245 @@ const SND = {
   next:  () => beep([520], 0.06),
   right: () => beep([784, 988, 1175, 1568], 0.12, 'triangle'),
   wrong: () => beep([220, 165], 0.2, 'sawtooth'),
+  lock:  () => beep([180], 0.15, 'sawtooth'),
 };
 
-/* ================= 선생님(방장) =================
-   phase: idle(꺼짐) / open(버저 켜짐, 누른 순서 기록) / done(정답 처리됨)
-   order: 누른 순서 [{id,name,ms}]
-   turn : 지금 답할 차례인 order의 인덱스 (오답이면 +1)              */
-let peer, isHost = false;
-const students = new Map(); // peerId -> {conn, name, lastSeen}
-let state = { phase:'idle', round:0, order:[], turn:0, rightId:null };
-let armedAt = 0;
+/* ================= 설정 ================= */
+const DEF = { guard:true, penalty:'time', lockSec:3, readyDelay:true, wrongMinus:false };
+let settings = Object.assign({}, DEF, load('buzzerSettings', {}));
+if (settings.penalty === 'none') { settings.guard = false; settings.penalty = 'time'; }   // 이전 버전 설정 호환
+const effPenalty = () => settings.guard ? settings.penalty : 'none';
 
-async function keepAwake(){ try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){} }
+function applySetting(k, v){
+  settings[k] = v; save('buzzerSettings', settings);
+  if (effPenalty() === 'none') {     // 방지를 끄면 멈춘 학생들 바로 풀어주기
+    students.forEach(s => { if (s.lockUntil) { s.lockUntil = 0; send(s.conn, { t:'unlocked' }); } });
+  }
+  renderSettings();
+  if (isHost) { broadcast(); renderStudents(); }
+  if ($('m-log').classList.contains('on')) renderLog();
+}
+function toggleGuard(){ applySetting('guard', !settings.guard); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('.seg button'); if (!b) return;
+  const raw = b.dataset.v;
+  applySetting(b.parentElement.dataset.k, raw === 'true' ? true : raw === 'false' ? false : isNaN(raw) ? raw : Number(raw));
+});
+function renderSettings(){
+  document.querySelectorAll('.seg').forEach(seg => {
+    const cur = String(settings[seg.dataset.k]);
+    seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === cur));
+  });
+  $('set-penalty').classList.toggle('dim', !settings.guard);
+  $('set-locksec').classList.toggle('dim', !settings.guard || settings.penalty !== 'time');
+  const g = $('b-guard');
+  g.textContent = settings.guard ? '🔒 미리누르기 방지 ON' : '🔓 미리누르기 방지 OFF';
+  g.classList.toggle('off', !settings.guard);
+}
+
+/* ================= 모달 ================= */
+function openModal(id){ closeModal(); $(id).classList.add('on'); }
+function closeModal(){ document.querySelectorAll('.modal.on').forEach(m => m.classList.remove('on')); }
+const modalOpen = () => !!document.querySelector('.modal.on');
+
+/* ================= 선생님(방장) =================
+   phase: idle(꺼짐) / ready(랜덤 준비) / open(켜짐, 순서 기록) / done(정답 처리됨)
+   order: 누른 순서 [{cid,name,ms}]   turn: 지금 답할 차례 (오답이면 +1)         */
+let peer, isHost = false, roomCode = '', joinLink = '', hostRetries = 0;
+const students = new Map(); // cid -> {conn,name,key,lastSeen,online,lockUntil}
+let state = { phase:'idle', round:0, order:[], turn:0, rightCid:null };
+let armedAt = 0, readyTimer = null, curQ = null, history = [];
+
+let LOG = load('buzzerLog', null) || {};
+LOG.questions = LOG.questions || []; LOG.roster = LOG.roster || []; LOG.early = LOG.early || {};
+function saveLog(){ save('buzzerLog', LOG); }
 
 function startTeacher(){
   isHost = true;
   show('teacher');
   keepAwake();
-  let saved = null;
-  try{ saved = localStorage.getItem('buzzerRoom'); }catch(e){}
-  createHost(saved || randCode());
-  renderTeacher();
+  const saved = load('buzzerRoom', null);
+  createHost(saved ? String(saved) : randCode());
+  renderTeacher(); renderSettings();
 }
 
 function createHost(code){
+  roomCode = code;
   setStatus($('t-status'), '연결 중…');
   peer = new Peer(PREFIX + code);
   peer.on('open', () => {
-    try{ localStorage.setItem('buzzerRoom', code); }catch(e){}
+    hostRetries = 0;
+    save('buzzerRoom', code);
     $('t-code').textContent = code;
-    const link = location.href.split('#')[0] + '#join=' + code;
-    $('t-link').textContent = link;
+    joinLink = location.href.split('#')[0] + '#join=' + code;
+    $('t-link').textContent = joinLink;
     $('qr').innerHTML = '';
-    try{ new QRCode($('qr'), { text: link, width: 132, height: 132 }); }catch(e){}
+    try{ new QRCode($('qr'), { text: joinLink, width: 120, height: 120 }); }catch(e){}
     setStatus($('t-status'), '방 열림', 'ok');
   });
-  peer.on('connection', conn => {
-    conn.on('data', d => onHostData(conn, d));
-    conn.on('close', () => removeStudent(conn.peer));
-    conn.on('error', () => removeStudent(conn.peer));
+  peer.on('connection', c => {
+    c.on('data', d => onHostData(c, d));
+    c.on('close', () => markOffline(c));
+    c.on('error', () => markOffline(c));
   });
-  peer.on('disconnected', () => { setStatus($('t-status'), '재연결 중…', 'bad'); try{ peer.reconnect(); }catch(e){} });
+  peer.on('disconnected', () => {
+    setStatus($('t-status'), '재연결 중…', 'bad');
+    setTimeout(() => { try{ if (peer.disconnected && !peer.destroyed) peer.reconnect(); }catch(e){} }, 1000);
+  });
   peer.on('error', e => {
-    if (e.type === 'unavailable-id') { peer.destroy(); createHost(randCode()); }
-    else if (['network','server-error','socket-error'].includes(e.type)) setStatus($('t-status'), '인터넷 연결 확인', 'bad');
+    if (e.type === 'unavailable-id') {
+      // 새로고침 직후엔 이전 방이 잠깐 남아 있어요 → 같은 번호로 몇 번 더 시도
+      peer.destroy();
+      if (hostRetries++ < 6) { setStatus($('t-status'), `방 다시 여는 중… (${hostRetries})`, 'bad'); setTimeout(() => createHost(code), 2500); }
+      else { hostRetries = 0; createHost(randCode()); }
+    } else if (NET_ERR.includes(e.type)) setStatus($('t-status'), '인터넷 연결 확인', 'bad');
   });
 }
 
-function onHostData(conn, d){
+function reject(c, msg){ send(c, { t:'reject', msg }); setTimeout(() => { try{ c.close(); }catch(e){} }, 500); }
+
+function onHostData(c, d){
   if (!d || typeof d !== 'object') return;
-  const s = students.get(conn.peer);
   if (d.t === 'join') {
-    const name = String(d.name||'').trim().slice(0,10) || '이름없음';
-    students.set(conn.peer, { conn, name, lastSeen: Date.now() });
-    send(conn, stateMsg());
+    const cid = String(d.cid || c.peer).slice(0, 60);
+    const name = String(d.name || '').trim().slice(0, 10);
+    if (!name) return reject(c, '이름을 입력해 주세요');
+    const key = nameKey(name);
+    for (const [id, s] of students) {
+      if (id !== cid && s.key === key && s.online)
+        return reject(c, `'${name}' 이름이 이미 있어요. 다른 이름(예: ${name}2)으로 들어와 주세요`);
+    }
+    let s = students.get(cid);
+    // 연결이 끊긴 같은 이름 학생이 다른 기기로 들어온 경우 → 그 자리를 이어받기
+    for (const [id, o] of students) {
+      if (id !== cid && o.key === key) {
+        students.delete(id);
+        state.order.forEach(x => { if (x.cid === id) x.cid = cid; });
+        if (state.rightCid === id) state.rightCid = cid;
+        history.forEach(h => { if (h.cid === id) h.cid = cid; });
+        if (!s) s = o;
+      }
+    }
+    if (s && s.conn && s.conn !== c) { const old = s.conn; s.conn = null; try{ old.close(); }catch(e){} }
+    s = s || { lockUntil: 0 };
+    Object.assign(s, { conn: c, name, key, lastSeen: Date.now(), online: true });
+    students.set(cid, s); c.cid = cid;
+    if (!LOG.roster.includes(name)) { LOG.roster.push(name); saveLog(); }
+    send(c, { t:'welcome' }); send(c, stateMsg()); sendLock(cid);
     renderStudents();
-  } else if (d.t === 'pong') {
-    if (s) s.lastSeen = Date.now();
-  } else if (d.t === 'buzz') {
-    if (!s) return;
-    s.lastSeen = Date.now();
-    if (state.phase !== 'open' || d.round !== state.round) return;
-    if (state.order.some(o => o.id === conn.peer)) return;       // 한 문제에 한 번만
-    state.order.push({ id: conn.peer, name: s.name, ms: Math.round(performance.now() - armedAt) });
-    // 지금 답할 사람이 새로 생긴 경우(첫 번째, 혹은 모두 오답이라 기다리던 중)
-    if (state.order.length - 1 === state.turn) SND.first(); else SND.next();
-    broadcast(); renderTeacher();
+    return;
+  }
+  const cid = c.cid, s = cid && students.get(cid);
+  if (!s || s.conn !== c) return;
+  s.lastSeen = Date.now();
+  if (!s.online) { s.online = true; renderStudents(); }
+  if (d.t === 'buzz') onBuzz(cid, s, d);
+  else if (d.t === 'early') onEarly(cid, s);
+  else if (d.t === 'unlock') {
+    if (s.lockUntil === Infinity) { s.lockUntil = 0; send(c, { t:'unlocked' }); renderStudents(); }
   }
 }
 
-function removeStudent(id){ if (students.delete(id)) renderStudents(); }
-function stateMsg(){
-  return { t:'state', phase:state.phase, round:state.round, turn:state.turn, rightId:state.rightId,
-           order: state.order.map(o => ({ id:o.id, name:o.name })) };
+function onBuzz(cid, s, d){
+  if (s.lockUntil > Date.now()) { sendLock(cid); return; }       // 멈춤 중엔 무시
+  if (state.phase !== 'open' || d.round !== state.round) return;
+  if (state.order.some(o => o.cid === cid)) return;               // 한 문제에 한 번만
+  state.order.push({ cid, name: s.name, ms: Math.round(performance.now() - armedAt) });
+  if (state.order.length - 1 === state.turn) SND.first(); else SND.next();
+  syncLog(); broadcast(); renderTeacher();
 }
-function send(conn, msg){ try{ if (conn.open) conn.send(msg); }catch(e){} }
+
+function onEarly(cid, s){
+  if (effPenalty() === 'none') return;
+  const now = Date.now(), was = s.lockUntil > now;
+  s.lockUntil = settings.penalty === 'confirm' ? Infinity : now + settings.lockSec * 1000;
+  if (!was) { LOG.early[s.name] = (LOG.early[s.name] || 0) + 1; saveLog(); }
+  sendLock(cid); renderStudents();
+}
+
+function sendLock(cid){
+  const s = students.get(cid); if (!s || !s.conn) return;
+  const left = s.lockUntil - Date.now();
+  if (left > 0) send(s.conn, { t:'lock', ms: s.lockUntil === Infinity ? -1 : left });
+}
+
+function markOffline(c){
+  students.forEach(s => { if (s.conn === c) { s.conn = null; s.online = false; } });
+  renderStudents();
+}
+function stateMsg(){
+  return { t:'state', phase:state.phase, round:state.round, turn:state.turn, rightCid:state.rightCid,
+           order: state.order.map(o => ({ cid:o.cid, name:o.name })),
+           penalty: effPenalty(), lockSec: settings.lockSec };
+}
+function send(c, msg){ try{ if (c && c.open) c.send(msg); }catch(e){} }
 function broadcast(){ const m = stateMsg(); students.forEach(s => send(s.conn, m)); }
 const current = () => state.phase === 'open' ? state.order[state.turn] : null;
 
+/* ---- 진행 ---- */
 function arm(){
-  state = { phase:'open', round: state.round + 1, order:[], turn:0, rightId:null };
+  clearTimeout(readyTimer);
+  curQ = null; history = [];
+  const round = state.round + 1;
+  state = { phase: settings.readyDelay ? 'ready' : 'open', round, order:[], turn:0, rightCid:null };
+  if (settings.readyDelay) {
+    broadcast(); renderTeacher();
+    readyTimer = setTimeout(() => openBuzzer(round), 1000 + Math.random() * 1500);
+  } else openBuzzer(round);
+}
+function openBuzzer(round){
+  if (state.round !== round) return;
+  state.phase = 'open';
   armedAt = performance.now();
   SND.arm(); broadcast(); renderTeacher();
 }
+function resetRound(){
+  clearTimeout(readyTimer);
+  curQ = null; history = [];
+  state = { phase:'idle', round: state.round + 1, order:[], turn:0, rightCid:null };
+  broadcast(); renderTeacher();
+}
+function ensureQ(){
+  if (!curQ) { curQ = { id: Date.now(), at: new Date().toISOString(), right:null, wrong:[], order:[] }; LOG.questions.push(curQ); }
+}
+function syncLog(){
+  if (curQ) curQ.order = state.order.map(o => o.name);
+  saveLog();
+  if ($('m-log').classList.contains('on')) renderLog();
+}
 function markRight(){
   const c = current(); if (!c) return;
-  state.phase = 'done'; state.rightId = c.id;
-  SND.right(); broadcast(); renderTeacher();
+  ensureQ(); curQ.right = c.name;
+  state.phase = 'done'; state.rightCid = c.cid;
+  history.push({ type:'right', cid:c.cid, name:c.name });
+  syncLog(); SND.right(); broadcast(); renderTeacher();
 }
 function markWrong(){
   const c = current(); if (!c) return;
+  ensureQ(); curQ.wrong.push(c.name);
   state.turn++;
-  SND.wrong(); broadcast(); renderTeacher();
+  history.push({ type:'wrong', cid:c.cid, name:c.name });
+  syncLog(); SND.wrong(); broadcast(); renderTeacher();
 }
-function resetRound(){
-  state = { phase:'idle', round: state.round + 1, order:[], turn:0, rightId:null };
-  broadcast(); renderTeacher();
+function undo(){
+  const h = history.pop(); if (!h) return;
+  if (h.type === 'right') { state.phase = 'open'; state.rightCid = null; if (curQ) curQ.right = null; }
+  else { state.turn = Math.max(0, state.turn - 1); if (curQ) { const i = curQ.wrong.lastIndexOf(h.name); if (i >= 0) curQ.wrong.splice(i, 1); } }
+  if (curQ && !curQ.right && !curQ.wrong.length) { LOG.questions = LOG.questions.filter(q => q !== curQ); curQ = null; }
+  syncLog(); broadcast(); renderTeacher();
 }
 
+/* ---- 화면 ---- */
 function renderTeacher(){ renderStage(); renderRank(); renderStudents(); }
 
 function renderStage(){
   const c = current();
-  const st = $('stage');
   let cls = state.phase, msg = '', win = '', time = '';
   if (state.phase === 'idle') {
     msg = '버저가 꺼져 있어요';
+    time = LOG.questions.length ? `지금까지 ${LOG.questions.length}문제 기록됨` : '';
+  } else if (state.phase === 'ready') {
+    msg = '⏳ 준비… 곧 버저가 켜져요';
   } else if (state.phase === 'open' && !state.order.length) {
     msg = '🔴 버저 ON! 누가 제일 빠를까요?';
   } else if (state.phase === 'open' && c) {
@@ -329,14 +602,15 @@ function renderStage(){
     msg = '😮 다음으로 누른 친구가 없어요';
     time = '지금 누르는 친구에게 기회가 가요';
   } else if (state.phase === 'done') {
-    const r = state.order.find(o => o.id === state.rightId);
+    const r = state.order.find(o => o.cid === state.rightCid);
     msg = '⭕ 정답!'; win = r ? r.name : '';
   }
-  st.className = 'stage ' + cls;
+  $('stage').className = 'stage ' + cls;
   $('st-msg').textContent = msg; $('st-winner').textContent = win; $('st-time').textContent = time;
   $('b-arm').textContent = state.phase === 'idle' ? '▶ 버저 켜기' : '▶ 다음 문제';
   $('b-right').disabled = !c;
   $('b-wrong').disabled = !c;
+  $('b-undo').disabled = !history.length;
 }
 
 function renderRank(){
@@ -344,7 +618,7 @@ function renderRank(){
   if (!state.order.length) { ol.innerHTML = '<li class="empty" style="background:none">아직 아무도 안 눌렀어요</li>'; return; }
   ol.innerHTML = state.order.map((o, i) => {
     let cls = '';
-    if (state.phase === 'done' && o.id === state.rightId) cls = 'right';
+    if (state.phase === 'done' && o.cid === state.rightCid) cls = 'right';
     else if (state.phase === 'open' && i === state.turn) cls = 'cur';
     else if (i < state.turn) cls = 'wrong';
     const mark = cls === 'right' ? ' ⭕' : cls === 'wrong' ? ' ❌' : '';
@@ -353,40 +627,146 @@ function renderRank(){
 }
 
 function renderStudents(){
-  const list = $('t-list');
-  $('t-count').textContent = students.size;
-  if (!students.size) { list.innerHTML = '<span class="empty">아직 아무도 없어요. 방 번호를 알려주세요!</span>'; return; }
+  const list = $('t-list'), now = Date.now();
+  const all = [...students.entries()];
+  const off = all.filter(([,s]) => !s.online).length;
+  $('t-count').textContent = all.length - off;
+  $('t-off').textContent = off ? ` · 연결 끊김 ${off}명` : '';
+  if (!all.length) { list.innerHTML = '<span class="empty">아직 아무도 없어요. 방 번호를 알려주세요!</span>'; return; }
   const c = current();
-  const pressed = new Set(state.order.map(o => o.id));
-  const arr = [...students.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'ko'));
-  list.innerHTML = arr.map(([id,s]) => {
-    const cls = c && c.id === id ? 'cur' : pressed.has(id) ? 'pressed' : '';
-    return `<span class="chip ${cls}">${esc(s.name)}</span>`;
+  const pressed = new Set(state.order.map(o => o.cid));
+  all.sort((a,b) => a[1].name.localeCompare(b[1].name, 'ko'));
+  list.innerHTML = all.map(([id, s]) => {
+    const locked = s.lockUntil > now;
+    const cls = !s.online ? 'off' : c && c.cid === id ? 'cur' : locked ? 'locked' : pressed.has(id) ? 'pressed' : '';
+    const title = !s.online ? '연결이 끊겼어요 · 누르면 목록에서 빼요' : locked ? '미리 눌러서 멈춤' : '';
+    return `<span class="chip ${cls}" data-cid="${esc(id)}" title="${title}">${locked && s.online ? '🔒 ' : ''}${esc(s.name)}</span>`;
   }).join('');
 }
+$('t-list').addEventListener('click', e => {
+  const ch = e.target.closest('.chip.off'); if (!ch) return;
+  students.delete(ch.dataset.cid); renderStudents();
+});
 
-// 접속 확인(핑) — 응답 없는 학생은 목록에서 제거
-setInterval(() => {
+/* ---- QR 크게 ---- */
+function openQR(){
+  if (!joinLink) return;
+  const n = Math.floor(Math.min(innerWidth * 0.8, innerHeight * 0.6, 640));
+  $('qr-big').innerHTML = '';
+  try{ new QRCode($('qr-big'), { text: joinLink, width: n, height: n }); }catch(e){}
+  $('big-code').textContent = roomCode;
+  $('big-link').textContent = joinLink;
+  openModal('m-qr');
+}
+
+/* ---- 기록·점수 ---- */
+function openLog(){ renderSettings(); renderLog(); openModal('m-log'); }
+function scores(){
+  const m = new Map();
+  const get = n => { if (!m.has(n)) m.set(n, { name:n, right:0, wrong:0, early:0 }); return m.get(n); };
+  LOG.roster.forEach(get);
+  LOG.questions.forEach(q => { if (q.right) get(q.right).right++; q.wrong.forEach(n => get(n).wrong++); });
+  Object.entries(LOG.early).forEach(([n, c]) => get(n).early = c);
+  const arr = [...m.values()];
+  arr.forEach(r => r.score = r.right - (settings.wrongMinus ? r.wrong : 0));
+  arr.sort((a,b) => b.score - a.score || b.right - a.right || a.wrong - b.wrong || a.name.localeCompare(b.name, 'ko'));
+  let prev = null, rank = 0;
+  arr.forEach((r, i) => { if (r.score !== prev) rank = i + 1; prev = r.score; r.rank = rank; });
+  return arr;
+}
+const hhmm = iso => { const d = new Date(iso); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); };
+function renderLog(){
+  $('score-rule').textContent = settings.wrongMinus ? '점수 = 정답 수 − 오답 수' : '점수 = 정답 수';
+  const sc = scores();
+  $('score-tbl').innerHTML = '<tr><th class="c">순위</th><th>이름</th><th class="c">⭕ 정답</th><th class="c">❌ 오답</th><th class="c">점수</th><th class="c">🔒 미리누름</th></tr>' +
+    (sc.length ? sc.map(r => `<tr><td class="c">${r.rank}</td><td>${esc(r.name)}</td><td class="c">${r.right}</td><td class="c">${r.wrong}</td><td class="c"><b>${r.score}</b></td><td class="c">${r.early || ''}</td></tr>`).join('')
+               : '<tr><td colspan="6" class="muted">아직 기록이 없어요</td></tr>');
+  const qs = LOG.questions;
+  $('q-count').textContent = qs.length ? `(${qs.length}문제)` : '';
+  $('q-tbl').innerHTML = '<tr><th class="c">문제</th><th>시간</th><th>⭕ 정답자</th><th>❌ 오답자</th><th>누른 순서</th><th></th></tr>' +
+    (qs.length ? qs.map((q, i) => ({ q, i })).reverse().map(({ q, i }) =>
+      `<tr><td class="c">${i+1}</td><td>${hhmm(q.at)}</td><td>${q.right ? esc(q.right) : '<span class="muted">없음</span>'}</td><td>${esc(q.wrong.join(', '))}</td><td class="ord">${esc(q.order.join(' → '))}</td><td><button class="del" title="이 기록 지우기" onclick="delQ(${q.id})">✕</button></td></tr>`).join('')
+               : '<tr><td colspan="6" class="muted">정답·오답을 판정하면 여기에 쌓여요</td></tr>');
+}
+function delQ(id){
+  LOG.questions = LOG.questions.filter(q => q.id !== id);
+  if (curQ && curQ.id === id) { curQ = null; history = []; }
+  saveLog(); renderLog(); renderStage();
+}
+let clearArmed = false, clearTimer = null;
+function clearLog(){
+  const b = $('b-clear');
+  if (!clearArmed) {
+    clearArmed = true; b.textContent = '⚠ 한 번 더 누르면 지워져요'; b.classList.add('danger');
+    clearTimer = setTimeout(() => { clearArmed = false; b.textContent = '🗑 기록 모두 지우기'; b.classList.remove('danger'); }, 3000);
+    return;
+  }
+  clearTimeout(clearTimer); clearArmed = false; b.textContent = '🗑 기록 모두 지우기'; b.classList.remove('danger');
+  LOG = { questions:[], roster:[...students.values()].map(s => s.name), early:{} };
+  curQ = null; history = [];
+  saveLog(); renderLog(); renderStage();
+}
+function downloadCSV(){
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const rows = [['순위','이름','정답','오답','점수','미리누름']];
+  scores().forEach(r => rows.push([r.rank, r.name, r.right, r.wrong, r.score, r.early]));
+  rows.push([]);
+  rows.push(['문제','시간','정답자','오답자','누른 순서']);
+  LOG.questions.forEach((x, i) => rows.push([i+1, hhmm(x.at), x.right || '', x.wrong.join(', '), x.order.join(' → ')]));
+  const csv = '﻿' + rows.map(r => r.map(q).join(',')).join('\r\n');
+  const d = new Date(), ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+  a.download = `buzzer-record_${ds}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ---- 주기 작업 ---- */
+setInterval(() => {               // 접속 확인(핑)
   if (!isHost) return;
-  const now = Date.now();
-  students.forEach((s, id) => {
-    if (now - s.lastSeen > 12000) { try{ s.conn.close(); }catch(e){} students.delete(id); renderStudents(); }
+  const now = Date.now(); let ch = false;
+  students.forEach(s => {
+    if (!s.online) return;
+    if (now - s.lastSeen > 12000) { const c = s.conn; s.conn = null; s.online = false; try{ c && c.close(); }catch(e){} ch = true; }
     else send(s.conn, { t:'ping' });
   });
+  if (ch) renderStudents();
+  if (peer && !peer.destroyed && peer.disconnected) { try{ peer.reconnect(); }catch(e){} }
 }, 3000);
+setInterval(() => {               // 멈춤 풀림 표시
+  if (!isHost) return;
+  const now = Date.now(); let ch = false;
+  students.forEach(s => { if (s.lockUntil && s.lockUntil !== Infinity && s.lockUntil <= now) { s.lockUntil = 0; ch = true; } });
+  if (ch) renderStudents();
+}, 500);
 
 document.addEventListener('keydown', e => {
-  if (!isHost || !$('teacher').classList.contains('on') || e.repeat) return;
+  if (e.key === 'Escape') { closeModal(); return; }
+  if (!isHost || !$('teacher').classList.contains('on') || e.repeat || modalOpen()) return;
   const k = e.key.toLowerCase();
   if (e.code === 'Space') { e.preventDefault(); arm(); }
   else if (k === 'r' || k === 'ㄱ') resetRound();
   else if (k === 'o' || k === 'ㅐ') markRight();
   else if (k === 'x' || k === 'ㅌ') markWrong();
+  else if (k === 'z' || k === 'ㅋ') undo();
+  else if (k === 'q' || k === 'ㅂ') openQR();
+  else if (k === 'p' || k === 'ㅔ') toggleGuard();
 });
 
 /* ================= 학생 ================= */
-let conn, myName = '', roomCode = '', sState = { phase:'idle', round:0, order:[], turn:0 }, pressedRound = -1;
-let lastPing = 0, reconnectTimer = null, joinedOnce = false, wasMyTurn = false;
+let conn = null, myName = '', joinCode = '', myCid = '';
+let sState = { phase:'idle', round:0, order:[], turn:0, penalty:'time', lockSec:3 };
+let pressedRound = -1, lastPing = 0, reconnectTimer = null, connectTimer = null, joined = false, wasMyTurn = false;
+let lockUntil = 0; // 멈춤 끝나는 시각 (Infinity = 확인 버튼을 눌러야 풀림)
+
+function getCid(){
+  try{
+    let c = sessionStorage.getItem('buzzerCid');
+    if (!c) { c = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('buzzerCid', c); }
+    return c;
+  }catch(e){ return myCid || Math.random().toString(36).slice(2); }
+}
 
 function joinRoom(){
   const code = $('j-code').value.replace(/\D/g,'');
@@ -394,9 +774,10 @@ function joinRoom(){
   $('j-err').textContent = '';
   if (code.length !== 4) { $('j-err').textContent = '방 번호 4자리를 입력해 주세요'; return; }
   if (!name) { $('j-err').textContent = '이름을 입력해 주세요'; return; }
-  roomCode = code; myName = name;
+  joinCode = code; myName = name; myCid = getCid(); joined = false;
   try{ localStorage.setItem('buzzerName', name); }catch(e){}
   $('j-err').textContent = '연결 중…';
+  if (conn) { const c = conn; conn = null; try{ c.close(); }catch(e){} }
   connectStudent();
 }
 
@@ -404,77 +785,124 @@ function connectStudent(){
   clearTimeout(reconnectTimer);
   if (!peer || peer.destroyed) {
     peer = new Peer();
-    peer.on('open', openConn);
-    peer.on('disconnected', () => { try{ peer.reconnect(); }catch(e){} });
+    peer.on('open', () => { if (!conn || !conn.open) openConn(); });
+    peer.on('disconnected', () => {
+      setTimeout(() => { try{ if (peer && peer.disconnected && !peer.destroyed) peer.reconnect(); }catch(e){} }, 1000);
+    });
     peer.on('error', e => {
       if (e.type === 'peer-unavailable') {
-        if (!joinedOnce) $('j-err').textContent = '방을 찾을 수 없어요. 번호를 확인해 주세요';
-        else scheduleReconnect();
-      } else if (['network','server-error','socket-error'].includes(e.type)) {
-        if (!joinedOnce) $('j-err').textContent = '인터넷 연결을 확인해 주세요';
-        else scheduleReconnect();
+        if (!joined) {
+          $('j-err').textContent = '방을 찾을 수 없어요. 번호를 확인해 주세요';
+          clearTimeout(connectTimer);
+          const c = conn; conn = null; try{ c && c.close(); }catch(_){}
+        } else scheduleReconnect();
+      } else if (NET_ERR.includes(e.type)) {
+        if (!joined) $('j-err').textContent = '인터넷 연결을 확인하는 중…';
+        scheduleReconnect();
       }
     });
-  } else if (peer.open) {
-    openConn();
-  } else {
+  } else if (peer.disconnected) {
     try{ peer.reconnect(); }catch(e){}
     scheduleReconnect();
-  }
+  } else if (peer.open) {
+    openConn();
+  } else scheduleReconnect();
 }
 
 function openConn(){
-  try{ if (conn) conn.close(); }catch(e){}
-  conn = peer.connect(PREFIX + roomCode, { reliable:true });
-  conn.on('open', () => {
-    joinedOnce = true;
-    conn.send({ t:'join', name: myName });
+  if (conn && conn.open) return;
+  if (conn) { const old = conn; conn = null; try{ old.close(); }catch(e){} }
+  const c = peer.connect(PREFIX + joinCode, { reliable:true });
+  conn = c;
+  clearTimeout(connectTimer);
+  connectTimer = setTimeout(() => {
+    if (conn === c && !c.open) { conn = null; try{ c.close(); }catch(e){} scheduleReconnect(); }
+  }, 8000);
+  c.on('open', () => {
+    if (conn !== c) return;
+    clearTimeout(connectTimer);
+    c.send({ t:'join', cid: myCid, name: myName });
     lastPing = Date.now();
-    $('s-name').textContent = '🙋 ' + myName;
-    setStatus($('s-status'), '연결됨', 'ok');
-    show('student');
   });
-  conn.on('data', onStudentData);
-  conn.on('close', () => { if (joinedOnce) { setStatus($('s-status'), '재연결 중…', 'bad'); scheduleReconnect(); } });
-  conn.on('error', () => scheduleReconnect());
+  c.on('data', d => { if (conn === c) onStudentData(d); });
+  c.on('close', () => {
+    if (conn !== c) return;
+    conn = null;
+    if (joined) { setStatus($('s-status'), '재연결 중…', 'bad'); scheduleReconnect(); }
+  });
+  c.on('error', () => { if (conn === c) scheduleReconnect(); });
 }
 
 function scheduleReconnect(){
   clearTimeout(reconnectTimer);
   reconnectTimer = setTimeout(connectStudent, 2000);
 }
+function forceReconnect(){
+  if (conn) { const c = conn; conn = null; try{ c.close(); }catch(e){} }
+  setStatus($('s-status'), '재연결 중…', 'bad');
+  lastPing = Date.now();
+  connectStudent();
+}
 
 function onStudentData(d){
   if (!d || typeof d !== 'object') return;
   lastPing = Date.now();
-  if (d.t === 'ping') { try{ conn.send({ t:'pong' }); }catch(e){} return; }
-  if (d.t === 'state') {
-    sState = d;
-    renderBuzz();
+  switch (d.t) {
+    case 'ping': try{ conn.send({ t:'pong' }); }catch(e){} break;
+    case 'welcome':
+      joined = true; $('j-err').textContent = '';
+      $('s-name').textContent = '🙋 ' + myName;
+      setStatus($('s-status'), '연결됨', 'ok');
+      show('student'); keepAwake();
+      break;
+    case 'reject':
+      joined = false; clearTimeout(reconnectTimer);
+      show('join'); $('j-err').textContent = d.msg || '들어갈 수 없어요';
+      setTimeout(() => $('j-name').focus(), 100);
+      break;
+    case 'state':
+      sState = d;
+      if (d.penalty === 'none') lockUntil = 0;
+      renderBuzz();
+      break;
+    case 'lock':
+      if (d.ms < 0) { if (lockUntil !== Infinity) { lockUntil = Infinity; placeConfirm(); } }
+      else lockUntil = Date.now() + d.ms;
+      renderBuzz();
+      break;
+    case 'unlocked':
+      lockUntil = 0; renderBuzz();
+      break;
   }
 }
 
-// 핑이 오래 안 오면 재연결
-setInterval(() => {
-  if (isHost || !joinedOnce) return;
-  if (Date.now() - lastPing > 10000) { setStatus($('s-status'), '재연결 중…', 'bad'); lastPing = Date.now(); connectStudent(); }
-}, 3000);
+function ruleText(){
+  if (sState.penalty === 'time') return ` · 미리 누르면 ${sState.lockSec || 3}초 멈춰요`;
+  if (sState.penalty === 'confirm') return ' · 미리 누르면 확인 버튼을 찾아야 해요';
+  return ' · 지금은 마음껏 눌러도 괜찮아요';
+}
 
 function renderBuzz(){
-  const b = $('buzz'), m = $('s-msg');
-  const me = peer && peer.id;
+  const b = $('buzz'), m = $('s-msg'), now = Date.now();
   const order = sState.order || [];
-  const idx = order.findIndex(o => o.id === me);
+  const idx = order.findIndex(o => o.cid === myCid);
   const cur = sState.phase === 'open' ? order[sState.turn] : null;
+  $('confirm').classList.toggle('on', lockUntil === Infinity);
   let cls = '', txt = '', msg = '', myTurn = false;
 
-  if (sState.phase === 'idle') {
-    txt = '잠깐!'; msg = '선생님이 버저를 켜면 누를 수 있어요';
+  if (lockUntil > now) {
+    cls = 'locked';
+    if (lockUntil === Infinity) { txt = '🔒'; msg = '미리 눌렀어요! 확인 버튼을 찾아 눌러요'; }
+    else { txt = `🔒<br>${Math.ceil((lockUntil - now) / 1000)}`; msg = '미리 눌러서 멈췄어요 · 또 누르면 더 오래 멈춰요'; }
+  } else if (sState.phase === 'idle') {
+    txt = '잠깐!'; msg = '선생님이 버저를 켜면 눌러요' + ruleText();
+  } else if (sState.phase === 'ready') {
+    cls = 'ready'; txt = '준비…'; msg = '아직 누르면 안 돼요! 빨간색이 되면 눌러요';
   } else if (sState.phase === 'done') {
-    const r = order.find(o => o.id === sState.rightId);
-    if (sState.rightId === me) { cls = 'win'; txt = '정답! 🎉'; msg = '멋져요! 다음 문제를 기다려요'; }
-    else { cls = 'lose'; txt = '다음 기회에'; msg = r ? `${r.name} 친구가 맞혔어요` : ''; }
-  } else if (idx === -1) {            // 아직 안 누름 (또는 전송 중)
+    const r = order.find(o => o.cid === sState.rightCid);
+    if (sState.rightCid === myCid) { cls = 'win'; txt = '정답! 🎉'; msg = '멋져요! 다음 문제를 기다려요'; }
+    else { cls = 'lose'; txt = '다음 기회에'; msg = (r ? `${r.name} 친구가 맞혔어요` : '') + ruleText(); }
+  } else if (idx === -1) {            // 아직 안 누름
     if (pressedRound === sState.round) { cls = 'sent'; txt = '눌렀어요!'; msg = '순서를 확인하는 중…'; }
     else {
       cls = 'armed'; txt = '누르세요!';
@@ -485,27 +913,82 @@ function renderBuzz(){
   } else if (idx < sState.turn) {     // 오답 처리됨
     cls = 'lose'; txt = '아쉬워요'; msg = cur ? `${cur.name} 친구에게 기회가 넘어갔어요` : '다음 기회에!';
   } else {                            // 순서 대기
-    const ahead = idx - sState.turn;
-    cls = 'wait'; txt = `${idx+1}등`; msg = `앞에 ${ahead}명 있어요. 기다려요!`;
+    cls = 'wait'; txt = `${idx+1}등`; msg = `앞에 ${idx - sState.turn}명 있어요. 기다려요!`;
   }
-  b.className = cls; b.innerHTML = txt; m.textContent = msg;
+  if (b.className !== cls) b.className = cls;
+  if (b.innerHTML !== txt) b.innerHTML = txt;
+  if (m.textContent !== msg) m.textContent = msg;
 
   if (myTurn && !wasMyTurn) { beep([880, 1320], 0.15); if (navigator.vibrate) navigator.vibrate([80,60,80]); }
   wasMyTurn = myTurn;
 }
 
-function press(e){
-  e.preventDefault();
-  if (sState.phase !== 'open' || pressedRound === sState.round) return;
-  pressedRound = sState.round;
-  try{ conn.send({ t:'buzz', round: sState.round }); }catch(err){}
-  if (navigator.vibrate) navigator.vibrate(40);
+function early(){
+  if (sState.penalty === 'confirm') { if (lockUntil !== Infinity) { lockUntil = Infinity; placeConfirm(); } }
+  else lockUntil = Date.now() + (sState.lockSec || 3) * 1000;
+  try{ conn.send({ t:'early' }); }catch(e){}
+  SND.lock();
+  if (navigator.vibrate) navigator.vibrate(200);
   renderBuzz();
 }
+
+function press(e){
+  e.preventDefault();
+  if (!joined || lockUntil === Infinity) return;
+  if (sState.phase === 'open') {
+    if (lockUntil > Date.now()) { early(); return; }      // 멈춤 중에 또 누르면 연장
+    if (pressedRound === sState.round) return;
+    pressedRound = sState.round;
+    try{ conn.send({ t:'buzz', round: sState.round }); }catch(err){}
+    if (navigator.vibrate) navigator.vibrate(40);
+    renderBuzz();
+    return;
+  }
+  // 버저가 켜지기 전(꺼짐·준비·정답 처리 후)에 누름 = 미리 누르기
+  if (sState.penalty !== 'none') early();
+}
+
+function placeConfirm(){
+  const box = $('confirm-box'), btn = $('confirm-btn');
+  const w = 220, h = 110, pad = 16;
+  const x = pad + Math.random() * Math.max(0, innerWidth - w - pad * 2);
+  const y = pad + 50 + Math.random() * Math.max(0, innerHeight - h - pad * 2 - 50);
+  box.style.left = x + 'px'; box.style.top = y + 'px';
+  btn.classList.add('wait');                      // 연타로 바로 눌리지 않게 잠깐 비활성
+  setTimeout(() => btn.classList.remove('wait'), 700);
+}
+$('confirm-btn').addEventListener('click', () => {
+  lockUntil = 0;
+  try{ conn.send({ t:'unlock' }); }catch(e){}
+  renderBuzz();
+});
+
 $('buzz').addEventListener('pointerdown', press);
 document.addEventListener('keydown', e => {
   if (isHost || !$('student').classList.contains('on') || e.repeat) return;
   if (e.code === 'Space' || e.code === 'Enter') press(e);
+});
+
+setInterval(() => {               // 멈춤 카운트다운
+  if (isHost || !joined || !lockUntil || lockUntil === Infinity) return;
+  if (lockUntil <= Date.now()) lockUntil = 0;
+  renderBuzz();
+}, 200);
+setInterval(() => {               // 선생님 신호가 끊기면 재연결
+  if (isHost || !joined) return;
+  if (Date.now() - lastPing > 9000) forceReconnect();
+}, 3000);
+
+/* ---------------- 공통: 화면 다시 켤 때 ---------------- */
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  keepAwake();
+  if (isHost) { if (peer && !peer.destroyed && peer.disconnected) { try{ peer.reconnect(); }catch(e){} } }
+  else if (joined && (!conn || !conn.open || Date.now() - lastPing > 5000)) forceReconnect();
+});
+window.addEventListener('online', () => {
+  if (isHost) { if (peer && !peer.destroyed && peer.disconnected) { try{ peer.reconnect(); }catch(e){} } }
+  else if (joined) forceReconnect();
 });
 
 /* ---------------- 시작 ---------------- */
@@ -515,6 +998,7 @@ document.addEventListener('keydown', e => {
   if (m) { $('j-code').value = m[1]; show('join'); setTimeout(()=>$('j-name').focus(), 100); }
   $('j-name').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
   $('j-code').addEventListener('keydown', e => { if (e.key === 'Enter') $('j-name').focus(); });
+  renderSettings();
 })();
 </script>
 </body>
