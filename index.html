@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>우리반 버저</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#fff8ec; --card:#ffffff; --ink:#2d2a32; --muted:#8a8494;
+    --red:#ff4d4d; --red-dark:#c92f2f; --green:#2fbf71; --green-dark:#1f8f53;
+    --gray:#c9c4d1; --gray-dark:#9c96a6; --blue:#3b82f6; --yellow:#ffc53d; --yellow-dark:#d99a0b;
+    --line:#ece6dc;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:'Jua',system-ui,sans-serif;
+       display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-user-select:none;min-height:100vh}
+  .screen{display:none;width:100%;max-width:1000px;padding:16px;flex:1;flex-direction:column;align-items:center}
+  .screen.on{display:flex}
+  h1{font-size:2.4rem;margin:24px 0 8px;font-weight:normal}
+  .sub{color:var(--muted);margin:0 0 24px;text-align:center}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:20px;width:100%}
+  .btn{font-family:inherit;font-size:1.3rem;border:none;border-radius:16px;padding:16px 22px;cursor:pointer;
+       color:#fff;background:var(--blue);box-shadow:0 5px 0 rgba(0,0,0,.18);transition:transform .05s,opacity .15s}
+  .btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+  .btn.red{background:var(--red)} .btn.green{background:var(--green)} .btn.gray{background:var(--gray-dark)}
+  .btn.yellow{background:var(--yellow);color:#4a3500}
+  .btn:disabled{opacity:.35;cursor:default}
+  input{font-family:inherit;font-size:1.4rem;padding:14px;border-radius:14px;border:2px solid var(--line);width:100%;text-align:center;background:#fff;color:var(--ink)}
+  input:focus{outline:none;border-color:var(--blue)}
+  label{display:block;margin:12px 0 6px;color:var(--muted)}
+  .err{color:var(--red-dark);min-height:1.4em;margin-top:10px;text-align:center}
+
+  /* 홈 */
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:560px}
+  .role{font-size:1.6rem;padding:34px 10px}
+  .role small{display:block;font-size:1rem;opacity:.85;margin-top:6px}
+
+  /* 교사 */
+  .t-top{display:grid;grid-template-columns:1fr auto;gap:16px;width:100%;align-items:stretch}
+  .code-label{color:var(--muted)}
+  .code{font-size:4rem;letter-spacing:.15em;line-height:1;margin-top:6px}
+  .link{color:var(--muted);font-size:.85rem;word-break:break-all;font-family:system-ui,sans-serif;margin-top:6px}
+  #qr{background:#fff;padding:8px;border-radius:12px}
+  #qr img,#qr canvas{display:block}
+  .main{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;width:100%;margin-top:16px}
+  .stage{border-radius:24px;padding:24px 16px;text-align:center;min-height:280px;
+         display:flex;flex-direction:column;justify-content:center;align-items:center;transition:background .2s}
+  .stage.idle{background:#efeaf4} .stage.open{background:#ffe1e1} .stage.answering{background:#d9f7e6} .stage.done{background:#c9f2db}
+  .stage .msg{font-size:1.5rem;color:var(--muted)}
+  .stage .winner{font-size:clamp(3rem,9vw,6rem);line-height:1.1;margin:8px 0}
+  .stage .time{color:var(--muted);font-size:1.1rem}
+  .rank{padding:16px}
+  .rank h3{margin:0 0 10px;font-weight:normal}
+  .rank ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+  .rank li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;background:#f6f3fa;font-size:1.25rem}
+  .rank li .n{width:2.2em;color:var(--muted)}
+  .rank li .nm{flex:1}
+  .rank li .ms{color:var(--muted);font-size:.95rem}
+  .rank li.cur{background:var(--green);color:#fff} .rank li.cur .n,.rank li.cur .ms{color:#eafff3}
+  .rank li.wrong .nm{text-decoration:line-through;color:var(--muted)}
+  .rank li.right{background:var(--green);color:#fff}
+  .rank .empty{color:var(--muted)}
+  .controls{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:16px;width:100%}
+  .controls .btn{font-size:1.3rem;padding:18px 8px}
+  .hint{color:var(--muted);font-size:.9rem;margin-top:8px;text-align:center}
+  .students{margin-top:16px}
+  .students h3{margin:0 0 10px;font-weight:normal}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:#f4f0fa;border-radius:999px;padding:6px 14px;font-size:1.1rem}
+  .chip.pressed{background:#fff0c2}
+  .chip.cur{background:var(--green);color:#fff}
+  .empty{color:var(--muted)}
+  .status{font-size:.95rem;padding:4px 12px;border-radius:999px;background:#eee;color:var(--muted);white-space:nowrap}
+  .status.ok{background:#d9f7e6;color:var(--green-dark)}
+  .status.bad{background:#ffe1e1;color:var(--red-dark)}
+
+  /* 학생 */
+  .s-head{display:flex;justify-content:space-between;align-items:center;width:100%;gap:8px}
+  .s-name{font-size:1.5rem}
+  .buzz-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;gap:22px}
+  #buzz{width:min(78vw,60vh,420px);aspect-ratio:1;border-radius:50%;border:none;font-family:inherit;color:#fff;
+        font-size:clamp(2rem,9vw,3.4rem);cursor:pointer;touch-action:manipulation;line-height:1.2;
+        background:var(--gray);box-shadow:0 14px 0 var(--gray-dark);transition:transform .06s, box-shadow .06s}
+  #buzz.armed{background:var(--red);box-shadow:0 14px 0 var(--red-dark);animation:pulse 1s infinite}
+  #buzz.armed:active,#buzz.sent{transform:translateY(10px);box-shadow:0 4px 0 var(--red-dark)}
+  #buzz.sent{background:var(--red);animation:none}
+  #buzz.wait{background:var(--yellow);box-shadow:0 14px 0 var(--yellow-dark);color:#4a3500}
+  #buzz.win{background:var(--green);box-shadow:0 14px 0 var(--green-dark);animation:pop .4s}
+  #buzz.lose{background:var(--gray);box-shadow:0 14px 0 var(--gray-dark)}
+  @keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
+  @keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+  .s-msg{font-size:1.5rem;text-align:center;min-height:2.2em}
+
+  @media (max-width:760px){
+    .t-top,.main{grid-template-columns:1fr}
+    #qr{justify-self:center}
+    .code{font-size:3rem}
+    .roles{grid-template-columns:1fr}
+    .controls{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- 홈 -->
+<section id="home" class="screen on">
+  <h1>🔔 우리반 버저</h1>
+  <p class="sub">가장 먼저 누른 친구가 정답을 말할 수 있어요!</p>
+  <div class="roles">
+    <button class="btn role" onclick="startTeacher()">👩‍🏫 선생님<small>방 만들기</small></button>
+    <button class="btn red role" onclick="show('join')">🙋 학생<small>방 들어가기</small></button>
+  </div>
+</section>
+
+<!-- 학생 입장 -->
+<section id="join" class="screen">
+  <h1>🙋 방 들어가기</h1>
+  <div class="card" style="max-width:420px">
+    <label for="j-code">방 번호 (숫자 4자리)</label>
+    <input id="j-code" inputmode="numeric" maxlength="4" placeholder="1234">
+    <label for="j-name">내 이름</label>
+    <input id="j-name" maxlength="10" placeholder="홍길동">
+    <button class="btn red" style="width:100%;margin-top:18px" onclick="joinRoom()">입장하기</button>
+    <div id="j-err" class="err"></div>
+  </div>
+  <button class="btn gray" style="margin-top:16px;font-size:1rem;padding:10px 16px" onclick="show('home')">← 처음으로</button>
+</section>
+
+<!-- 교사 -->
+<section id="teacher" class="screen">
+  <div class="t-top">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="code-label">방 번호</span>
+        <span id="t-status" class="status">연결 중…</span>
+      </div>
+      <div class="code" id="t-code">----</div>
+      <div class="link" id="t-link"></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;justify-content:center"><div id="qr"></div></div>
+  </div>
+
+  <div class="main">
+    <div id="stage" class="stage idle">
+      <div class="msg" id="st-msg">버저가 꺼져 있어요</div>
+      <div class="winner" id="st-winner"></div>
+      <div class="time" id="st-time"></div>
+    </div>
+    <div class="card rank">
+      <h3>누른 순서</h3>
+      <ol id="t-rank"><li class="empty" style="background:none">아직 아무도 안 눌렀어요</li></ol>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn red" id="b-arm" onclick="arm()">▶ 버저 켜기</button>
+    <button class="btn green" id="b-right" onclick="markRight()" disabled>⭕ 정답</button>
+    <button class="btn yellow" id="b-wrong" onclick="markWrong()" disabled>❌ 오답 → 다음</button>
+    <button class="btn gray" id="b-reset" onclick="resetRound()">↺ 초기화</button>
+  </div>
+  <div class="hint">키보드: <b>스페이스</b> 버저 켜기 · <b>O</b> 정답 · <b>X</b> 오답 · <b>R</b> 초기화</div>
+
+  <div class="card students">
+    <h3>접속한 학생 <span id="t-count">0</span>명</h3>
+    <div class="chips" id="t-list"><span class="empty">아직 아무도 없어요. 방 번호를 알려주세요!</span></div>
+  </div>
+</section>
+
+<!-- 학생 버저 -->
+<section id="student" class="screen">
+  <div class="s-head">
+    <span class="s-name" id="s-name"></span>
+    <span id="s-status" class="status">연결 중…</span>
+  </div>
+  <div class="buzz-wrap">
+    <button id="buzz">잠깐!</button>
+    <div class="s-msg" id="s-msg">선생님이 버저를 켜면 누를 수 있어요</div>
+  </div>
+</section>
+
+<script>
+const PREFIX = 'elem-class-buzzer-v1-';
+const $ = id => document.getElementById(id);
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id)); }
+function randCode(){ return String(Math.floor(1000 + Math.random()*9000)); }
+function setStatus(el, text, kind){ el.textContent = text; el.className = 'status ' + (kind||''); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const sec = ms => (ms/1000).toFixed(2) + '초';
+
+/* ---------------- 소리 ---------------- */
+let actx;
+function beep(freqs, dur=0.12, type='square'){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    let t = actx.currentTime;
+    freqs.forEach(f=>{
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type=type; o.frequency.value=f; o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+      o.start(t); o.stop(t+dur); t += dur;
+    });
+  }catch(e){}
+}
+const SND = {
+  arm:   () => beep([660], 0.1),
+  first: () => beep([880, 1320], 0.15),
+  next:  () => beep([520], 0.06),
+  right: () => beep([784, 988, 1175, 1568], 0.12, 'triangle'),
+  wrong: () => beep([220, 165], 0.2, 'sawtooth'),
+};
+
+/* ================= 선생님(방장) =================
+   phase: idle(꺼짐) / open(버저 켜짐, 누른 순서 기록) / done(정답 처리됨)
+   order: 누른 순서 [{id,name,ms}]
+   turn : 지금 답할 차례인 order의 인덱스 (오답이면 +1)              */
+let peer, isHost = false;
+const students = new Map(); // peerId -> {conn, name, lastSeen}
+let state = { phase:'idle', round:0, order:[], turn:0, rightId:null };
+let armedAt = 0;
+
+async function keepAwake(){ try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){} }
+
+function startTeacher(){
+  isHost = true;
+  show('teacher');
+  keepAwake();
+  let saved = null;
+  try{ saved = localStorage.getItem('buzzerRoom'); }catch(e){}
+  createHost(saved || randCode());
+  renderTeacher();
+}
+
+function createHost(code){
+  setStatus($('t-status'), '연결 중…');
+  peer = new Peer(PREFIX + code);
+  peer.on('open', () => {
+    try{ localStorage.setItem('buzzerRoom', code); }catch(e){}
+    $('t-code').textContent = code;
+    const link = location.href.split('#')[0] + '#join=' + code;
+    $('t-link').textContent = link;
+    $('qr').innerHTML = '';
+    try{ new QRCode($('qr'), { text: link, width: 132, height: 132 }); }catch(e){}
+    setStatus($('t-status'), '방 열림', 'ok');
+  });
+  peer.on('connection', conn => {
+    conn.on('data', d => onHostData(conn, d));
+    conn.on('close', () => removeStudent(conn.peer));
+    conn.on('error', () => removeStudent(conn.peer));
+  });
+  peer.on('disconnected', () => { setStatus($('t-status'), '재연결 중…', 'bad'); try{ peer.reconnect(); }catch(e){} });
+  peer.on('error', e => {
+    if (e.type === 'unavailable-id') { peer.destroy(); createHost(randCode()); }
+    else if (['network','server-error','socket-error'].includes(e.type)) setStatus($('t-status'), '인터넷 연결 확인', 'bad');
+  });
+}
+
+function onHostData(conn, d){
+  if (!d || typeof d !== 'object') return;
+  const s = students.get(conn.peer);
+  if (d.t === 'join') {
+    const name = String(d.name||'').trim().slice(0,10) || '이름없음';
+    students.set(conn.peer, { conn, name, lastSeen: Date.now() });
+    send(conn, stateMsg());
+    renderStudents();
+  } else if (d.t === 'pong') {
+    if (s) s.lastSeen = Date.now();
+  } else if (d.t === 'buzz') {
+    if (!s) return;
+    s.lastSeen = Date.now();
+    if (state.phase !== 'open' || d.round !== state.round) return;
+    if (state.order.some(o => o.id === conn.peer)) return;       // 한 문제에 한 번만
+    state.order.push({ id: conn.peer, name: s.name, ms: Math.round(performance.now() - armedAt) });
+    // 지금 답할 사람이 새로 생긴 경우(첫 번째, 혹은 모두 오답이라 기다리던 중)
+    if (state.order.length - 1 === state.turn) SND.first(); else SND.next();
+    broadcast(); renderTeacher();
+  }
+}
+
+function removeStudent(id){ if (students.delete(id)) renderStudents(); }
+function stateMsg(){
+  return { t:'state', phase:state.phase, round:state.round, turn:state.turn, rightId:state.rightId,
+           order: state.order.map(o => ({ id:o.id, name:o.name })) };
+}
+function send(conn, msg){ try{ if (conn.open) conn.send(msg); }catch(e){} }
+function broadcast(){ const m = stateMsg(); students.forEach(s => send(s.conn, m)); }
+const current = () => state.phase === 'open' ? state.order[state.turn] : null;
+
+function arm(){
+  state = { phase:'open', round: state.round + 1, order:[], turn:0, rightId:null };
+  armedAt = performance.now();
+  SND.arm(); broadcast(); renderTeacher();
+}
+function markRight(){
+  const c = current(); if (!c) return;
+  state.phase = 'done'; state.rightId = c.id;
+  SND.right(); broadcast(); renderTeacher();
+}
+function markWrong(){
+  const c = current(); if (!c) return;
+  state.turn++;
+  SND.wrong(); broadcast(); renderTeacher();
+}
+function resetRound(){
+  state = { phase:'idle', round: state.round + 1, order:[], turn:0, rightId:null };
+  broadcast(); renderTeacher();
+}
+
+function renderTeacher(){ renderStage(); renderRank(); renderStudents(); }
+
+function renderStage(){
+  const c = current();
+  const st = $('stage');
+  let cls = state.phase, msg = '', win = '', time = '';
+  if (state.phase === 'idle') {
+    msg = '버저가 꺼져 있어요';
+  } else if (state.phase === 'open' && !state.order.length) {
+    msg = '🔴 버저 ON! 누가 제일 빠를까요?';
+  } else if (state.phase === 'open' && c) {
+    cls = 'answering';
+    msg = state.turn === 0 ? '🎉 가장 먼저 누른 친구' : `${state.turn + 1}등 친구에게 기회!`;
+    win = c.name; time = sec(c.ms) + ' 만에 눌렀어요';
+  } else if (state.phase === 'open') {
+    msg = '😮 다음으로 누른 친구가 없어요';
+    time = '지금 누르는 친구에게 기회가 가요';
+  } else if (state.phase === 'done') {
+    const r = state.order.find(o => o.id === state.rightId);
+    msg = '⭕ 정답!'; win = r ? r.name : '';
+  }
+  st.className = 'stage ' + cls;
+  $('st-msg').textContent = msg; $('st-winner').textContent = win; $('st-time').textContent = time;
+  $('b-arm').textContent = state.phase === 'idle' ? '▶ 버저 켜기' : '▶ 다음 문제';
+  $('b-right').disabled = !c;
+  $('b-wrong').disabled = !c;
+}
+
+function renderRank(){
+  const ol = $('t-rank');
+  if (!state.order.length) { ol.innerHTML = '<li class="empty" style="background:none">아직 아무도 안 눌렀어요</li>'; return; }
+  ol.innerHTML = state.order.map((o, i) => {
+    let cls = '';
+    if (state.phase === 'done' && o.id === state.rightId) cls = 'right';
+    else if (state.phase === 'open' && i === state.turn) cls = 'cur';
+    else if (i < state.turn) cls = 'wrong';
+    const mark = cls === 'right' ? ' ⭕' : cls === 'wrong' ? ' ❌' : '';
+    return `<li class="${cls}"><span class="n">${i+1}등</span><span class="nm">${esc(o.name)}${mark}</span><span class="ms">${sec(o.ms)}</span></li>`;
+  }).join('');
+}
+
+function renderStudents(){
+  const list = $('t-list');
+  $('t-count').textContent = students.size;
+  if (!students.size) { list.innerHTML = '<span class="empty">아직 아무도 없어요. 방 번호를 알려주세요!</span>'; return; }
+  const c = current();
+  const pressed = new Set(state.order.map(o => o.id));
+  const arr = [...students.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'ko'));
+  list.innerHTML = arr.map(([id,s]) => {
+    const cls = c && c.id === id ? 'cur' : pressed.has(id) ? 'pressed' : '';
+    return `<span class="chip ${cls}">${esc(s.name)}</span>`;
+  }).join('');
+}
+
+// 접속 확인(핑) — 응답 없는 학생은 목록에서 제거
+setInterval(() => {
+  if (!isHost) return;
+  const now = Date.now();
+  students.forEach((s, id) => {
+    if (now - s.lastSeen > 12000) { try{ s.conn.close(); }catch(e){} students.delete(id); renderStudents(); }
+    else send(s.conn, { t:'ping' });
+  });
+}, 3000);
+
+document.addEventListener('keydown', e => {
+  if (!isHost || !$('teacher').classList.contains('on') || e.repeat) return;
+  const k = e.key.toLowerCase();
+  if (e.code === 'Space') { e.preventDefault(); arm(); }
+  else if (k === 'r' || k === 'ㄱ') resetRound();
+  else if (k === 'o' || k === 'ㅐ') markRight();
+  else if (k === 'x' || k === 'ㅌ') markWrong();
+});
+
+/* ================= 학생 ================= */
+let conn, myName = '', roomCode = '', sState = { phase:'idle', round:0, order:[], turn:0 }, pressedRound = -1;
+let lastPing = 0, reconnectTimer = null, joinedOnce = false, wasMyTurn = false;
+
+function joinRoom(){
+  const code = $('j-code').value.replace(/\D/g,'');
+  const name = $('j-name').value.trim();
+  $('j-err').textContent = '';
+  if (code.length !== 4) { $('j-err').textContent = '방 번호 4자리를 입력해 주세요'; return; }
+  if (!name) { $('j-err').textContent = '이름을 입력해 주세요'; return; }
+  roomCode = code; myName = name;
+  try{ localStorage.setItem('buzzerName', name); }catch(e){}
+  $('j-err').textContent = '연결 중…';
+  connectStudent();
+}
+
+function connectStudent(){
+  clearTimeout(reconnectTimer);
+  if (!peer || peer.destroyed) {
+    peer = new Peer();
+    peer.on('open', openConn);
+    peer.on('disconnected', () => { try{ peer.reconnect(); }catch(e){} });
+    peer.on('error', e => {
+      if (e.type === 'peer-unavailable') {
+        if (!joinedOnce) $('j-err').textContent = '방을 찾을 수 없어요. 번호를 확인해 주세요';
+        else scheduleReconnect();
+      } else if (['network','server-error','socket-error'].includes(e.type)) {
+        if (!joinedOnce) $('j-err').textContent = '인터넷 연결을 확인해 주세요';
+        else scheduleReconnect();
+      }
+    });
+  } else if (peer.open) {
+    openConn();
+  } else {
+    try{ peer.reconnect(); }catch(e){}
+    scheduleReconnect();
+  }
+}
+
+function openConn(){
+  try{ if (conn) conn.close(); }catch(e){}
+  conn = peer.connect(PREFIX + roomCode, { reliable:true });
+  conn.on('open', () => {
+    joinedOnce = true;
+    conn.send({ t:'join', name: myName });
+    lastPing = Date.now();
+    $('s-name').textContent = '🙋 ' + myName;
+    setStatus($('s-status'), '연결됨', 'ok');
+    show('student');
+  });
+  conn.on('data', onStudentData);
+  conn.on('close', () => { if (joinedOnce) { setStatus($('s-status'), '재연결 중…', 'bad'); scheduleReconnect(); } });
+  conn.on('error', () => scheduleReconnect());
+}
+
+function scheduleReconnect(){
+  clearTimeout(reconnectTimer);
+  reconnectTimer = setTimeout(connectStudent, 2000);
+}
+
+function onStudentData(d){
+  if (!d || typeof d !== 'object') return;
+  lastPing = Date.now();
+  if (d.t === 'ping') { try{ conn.send({ t:'pong' }); }catch(e){} return; }
+  if (d.t === 'state') {
+    sState = d;
+    renderBuzz();
+  }
+}
+
+// 핑이 오래 안 오면 재연결
+setInterval(() => {
+  if (isHost || !joinedOnce) return;
+  if (Date.now() - lastPing > 10000) { setStatus($('s-status'), '재연결 중…', 'bad'); lastPing = Date.now(); connectStudent(); }
+}, 3000);
+
+function renderBuzz(){
+  const b = $('buzz'), m = $('s-msg');
+  const me = peer && peer.id;
+  const order = sState.order || [];
+  const idx = order.findIndex(o => o.id === me);
+  const cur = sState.phase === 'open' ? order[sState.turn] : null;
+  let cls = '', txt = '', msg = '', myTurn = false;
+
+  if (sState.phase === 'idle') {
+    txt = '잠깐!'; msg = '선생님이 버저를 켜면 누를 수 있어요';
+  } else if (sState.phase === 'done') {
+    const r = order.find(o => o.id === sState.rightId);
+    if (sState.rightId === me) { cls = 'win'; txt = '정답! 🎉'; msg = '멋져요! 다음 문제를 기다려요'; }
+    else { cls = 'lose'; txt = '다음 기회에'; msg = r ? `${r.name} 친구가 맞혔어요` : ''; }
+  } else if (idx === -1) {            // 아직 안 누름 (또는 전송 중)
+    if (pressedRound === sState.round) { cls = 'sent'; txt = '눌렀어요!'; msg = '순서를 확인하는 중…'; }
+    else {
+      cls = 'armed'; txt = '누르세요!';
+      msg = cur ? `${cur.name} 친구가 답하는 중 · 눌러서 순서를 잡아요` : '정답을 알면 빨리 눌러요!';
+    }
+  } else if (idx === sState.turn) {   // 내 차례
+    cls = 'win'; txt = `${idx+1}등<br>내 차례!`; msg = '정답을 말해 주세요!'; myTurn = true;
+  } else if (idx < sState.turn) {     // 오답 처리됨
+    cls = 'lose'; txt = '아쉬워요'; msg = cur ? `${cur.name} 친구에게 기회가 넘어갔어요` : '다음 기회에!';
+  } else {                            // 순서 대기
+    const ahead = idx - sState.turn;
+    cls = 'wait'; txt = `${idx+1}등`; msg = `앞에 ${ahead}명 있어요. 기다려요!`;
+  }
+  b.className = cls; b.innerHTML = txt; m.textContent = msg;
+
+  if (myTurn && !wasMyTurn) { beep([880, 1320], 0.15); if (navigator.vibrate) navigator.vibrate([80,60,80]); }
+  wasMyTurn = myTurn;
+}
+
+function press(e){
+  e.preventDefault();
+  if (sState.phase !== 'open' || pressedRound === sState.round) return;
+  pressedRound = sState.round;
+  try{ conn.send({ t:'buzz', round: sState.round }); }catch(err){}
+  if (navigator.vibrate) navigator.vibrate(40);
+  renderBuzz();
+}
+$('buzz').addEventListener('pointerdown', press);
+document.addEventListener('keydown', e => {
+  if (isHost || !$('student').classList.contains('on') || e.repeat) return;
+  if (e.code === 'Space' || e.code === 'Enter') press(e);
+});
+
+/* ---------------- 시작 ---------------- */
+(function init(){
+  try{ const n = localStorage.getItem('buzzerName'); if (n) $('j-name').value = n; }catch(e){}
+  const m = location.hash.match(/join=(\d{4})/);
+  if (m) { $('j-code').value = m[1]; show('join'); setTimeout(()=>$('j-name').focus(), 100); }
+  $('j-name').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
+  $('j-code').addEventListener('keydown', e => { if (e.key === 'Enter') $('j-name').focus(); });
+})();
+</script>
+</body>
+</html>
