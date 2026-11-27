@@ -107,6 +107,19 @@
   .seg{display:inline-flex;flex-wrap:wrap;gap:6px}
   .seg button{font-family:inherit;font-size:1.05rem;padding:9px 14px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
   .seg button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.mini.pts{background:#fff6dc;border-color:#f3dc9b;color:#7a5600;box-shadow:0 3px 0 #f3dc9b}
+  .pts-badge{display:inline-block;background:rgba(255,255,255,.75);border-radius:999px;padding:6px 16px;font-size:1.15rem;margin-bottom:10px}
+  .stepper{display:flex;align-items:center;gap:10px;margin:8px 0}
+  .stepper button{font-family:inherit;font-size:1.6rem;width:52px;height:52px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .stepper button:active{transform:translateY(2px)}
+  .stepper .val{font-size:2.4rem;min-width:3.2em;text-align:center}
+  .stepper .val.r{color:var(--green-dark)} .stepper .val.w{color:var(--red-dark)}
+  .presets{display:flex;flex-wrap:wrap;gap:8px}
+  .presets button{font-family:inherit;font-size:1.05rem;padding:9px 14px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .presets button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .s-pts{font-size:1.2rem;background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 16px;margin-top:10px}
+  .s-pts.flash{animation:flash 1.2s}
+  @keyframes flash{0%,40%{background:var(--yellow);transform:scale(1.12)}100%{background:#fff;transform:scale(1)}}
   .set-item{padding:14px 0;border-bottom:1px solid var(--line)}
   .set-item:last-child{border-bottom:none}
   .set-item.dim{opacity:.4;pointer-events:none}
@@ -191,6 +204,7 @@
     <div class="t-tools">
       <span id="t-status" class="status">연결 중…</span>
       <button class="btn mini guard" id="b-guard" onclick="toggleGuard()" title="미리 누르기 방지 켜기/끄기 (P)"></button>
+      <button class="btn mini pts" id="b-pts" onclick="openPts()" title="정답·오답 점수 바꾸기"></button>
       <button class="btn mini" onclick="openLog()">📋 기록·점수</button>
       <button class="btn mini" onclick="openModal('m-set')">⚙ 설정</button>
     </div>
@@ -210,6 +224,7 @@
 
   <div class="main">
     <div id="stage" class="stage idle">
+      <div class="pts-badge" id="st-pts"></div>
       <div class="msg" id="st-msg">버저가 꺼져 있어요</div>
       <div class="winner" id="st-winner"></div>
       <div class="time" id="st-time"></div>
@@ -243,6 +258,7 @@
     <span class="s-name" id="s-name"></span>
     <span id="s-status" class="status">연결 중…</span>
   </div>
+  <div class="s-pts" id="s-pts"></div>
   <div class="buzz-wrap">
     <button id="buzz">잠깐!</button>
     <div class="s-msg" id="s-msg">선생님이 버저를 켜면 눌러요</div>
@@ -270,9 +286,8 @@
   <div class="modal-box wide">
     <div class="m-head"><h2>📋 기록·점수</h2><button class="x" onclick="closeModal()">✕</button></div>
     <div class="m-row">
-      <span>오답 감점</span>
-      <div class="seg" data-k="wrongMinus"><button data-v="false">감점 없음</button><button data-v="true">오답 −1점</button></div>
-      <span class="muted" id="score-rule"></span>
+      <span class="muted">점수는 문제마다 그때 정한 배점으로 계산돼요.</span>
+      <button class="linkbtn" onclick="openPts()">🏅 배점 바꾸기</button>
     </div>
     <h3>점수표</h3>
     <div class="tbl-wrap"><table id="score-tbl"></table></div>
@@ -283,6 +298,33 @@
       <button class="btn gray" id="b-clear" onclick="clearLog()">🗑 기록 모두 지우기</button>
     </div>
     <div class="hint" style="text-align:left">기록은 이 컴퓨터의 브라우저에 저장돼서 새로고침해도 남아 있어요. 잘못 판정한 문제는 ✕로 지울 수 있어요.</div>
+  </div>
+</div>
+
+<!-- 모달: 배점 -->
+<div class="modal" id="m-pts" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="m-head"><h2>🏅 배점 바꾸기</h2><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="set-item">
+      <div class="set-t">⭕ 맞히면</div>
+      <div class="stepper"><button onclick="stepPts('rightPts',-1)">−</button><span class="val r" id="pv-right"></span><button onclick="stepPts('rightPts',1)">+</button></div>
+    </div>
+    <div class="set-item">
+      <div class="set-t">❌ 틀리면</div>
+      <div class="stepper"><button onclick="stepPts('wrongPts',-1)">−</button><span class="val w" id="pv-wrong"></span><button onclick="stepPts('wrongPts',1)">+</button></div>
+    </div>
+    <div class="set-item">
+      <div class="set-t">빠르게 고르기</div>
+      <div class="presets" id="pts-presets">
+        <button data-r="1" data-w="0">+1 / 감점 없음</button>
+        <button data-r="1" data-w="1">+1 / −1</button>
+        <button data-r="2" data-w="1">+2 / −1</button>
+        <button data-r="3" data-w="2">+3 / −2</button>
+        <button data-r="5" data-w="3">+5 / −3</button>
+        <button data-r="10" data-w="5">+10 / −5</button>
+      </div>
+    </div>
+    <div class="set-d" id="pts-note" style="margin-top:12px"></div>
   </div>
 </div>
 
@@ -357,13 +399,23 @@ const SND = {
 };
 
 /* ================= 설정 ================= */
-const DEF = { guard:true, penalty:'time', lockSec:3, readyDelay:true, wrongMinus:false };
-let settings = Object.assign({}, DEF, load('buzzerSettings', {}));
-if (settings.penalty === 'none') { settings.guard = false; settings.penalty = 'time'; }   // 이전 버전 설정 호환
+const DEF = { guard:true, penalty:'time', lockSec:3, readyDelay:true, rightPts:1, wrongPts:0 };
+const SAVED = load('buzzerSettings', {});
+let settings = Object.assign({}, DEF, SAVED);
+// 이전 버전 설정 호환
+if (settings.penalty === 'none') { settings.guard = false; settings.penalty = 'time'; }
+if (SAVED.wrongPts == null && SAVED.wrongMinus) settings.wrongPts = 1;
+delete settings.wrongMinus;
 const effPenalty = () => settings.guard ? settings.penalty : 'none';
+const ptsText = (r, w) => `⭕ +${r}점 · ❌ ${w ? '−' + w + '점' : '감점 없음'}`;
 
 function applySetting(k, v){
   settings[k] = v; save('buzzerSettings', settings);
+  if ((k === 'rightPts' || k === 'wrongPts') && curQ && state.phase === 'open') {
+    // 진행 중인 문제에도 바로 적용 ("이번 문제부터")
+    curQ.rp = settings.rightPts; curQ.wp = settings.wrongPts; saveLog();
+  }
+  if (isHost) renderStage();
   if (effPenalty() === 'none') {     // 방지를 끄면 멈춘 학생들 바로 풀어주기
     students.forEach(s => { if (s.lockUntil) { s.lockUntil = 0; send(s.conn, { t:'unlocked' }); } });
   }
@@ -372,6 +424,13 @@ function applySetting(k, v){
   if ($('m-log').classList.contains('on')) renderLog();
 }
 function toggleGuard(){ applySetting('guard', !settings.guard); }
+function openPts(){ renderSettings(); openModal('m-pts'); }
+function stepPts(k, d){ applySetting(k, Math.max(0, Math.min(99, (settings[k] || 0) + d))); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('#pts-presets button'); if (!b) return;
+  settings.rightPts = Number(b.dataset.r);
+  applySetting('wrongPts', Number(b.dataset.w));
+});
 document.addEventListener('click', e => {
   const b = e.target.closest('.seg button'); if (!b) return;
   const raw = b.dataset.v;
@@ -387,6 +446,15 @@ function renderSettings(){
   const g = $('b-guard');
   g.textContent = settings.guard ? '🔒 미리누르기 방지 ON' : '🔓 미리누르기 방지 OFF';
   g.classList.toggle('off', !settings.guard);
+  const r = settings.rightPts, w = settings.wrongPts;
+  $('b-pts').textContent = `🏅 정답 +${r} · 오답 ${w ? '−' + w : '0'}`;
+  $('pv-right').textContent = '+' + r;
+  $('pv-wrong').textContent = w ? '−' + w : '0';
+  document.querySelectorAll('#pts-presets button').forEach(b =>
+    b.classList.toggle('on', Number(b.dataset.r) === r && Number(b.dataset.w) === w));
+  $('pts-note').textContent = state.phase === 'done'
+    ? '바꾼 배점은 다음 문제부터 적용돼요. 이미 판정한 문제의 점수는 그대로예요.'
+    : '바꾼 배점은 지금 문제부터 바로 적용돼요. 이미 끝난 문제의 점수는 그대로예요.';
 }
 
 /* ================= 모달 ================= */
@@ -404,6 +472,9 @@ let armedAt = 0, readyTimer = null, curQ = null, history = [];
 
 let LOG = load('buzzerLog', null) || {};
 LOG.questions = LOG.questions || []; LOG.roster = LOG.roster || []; LOG.early = LOG.early || {};
+// 이전 기록에는 배점이 없음 → 그때 규칙(정답 1점, 오답 감점 설정)으로 채우기
+LOG.questions.forEach(q => { if (q.rp == null) { q.rp = 1; q.wp = SAVED.wrongMinus ? 1 : 0; } });
+const curPts = () => curQ ? { r: curQ.rp, w: curQ.wp } : { r: settings.rightPts, w: settings.wrongPts };
 function saveLog(){ save('buzzerLog', LOG); }
 
 function startTeacher(){
@@ -522,7 +593,8 @@ function markOffline(c){
 function stateMsg(){
   return { t:'state', phase:state.phase, round:state.round, turn:state.turn, rightCid:state.rightCid,
            order: state.order.map(o => ({ cid:o.cid, name:o.name })),
-           penalty: effPenalty(), lockSec: settings.lockSec };
+           penalty: effPenalty(), lockSec: settings.lockSec,
+           rp: curPts().r, wp: curPts().w, nrp: settings.rightPts, nwp: settings.wrongPts };
 }
 function send(c, msg){ try{ if (c && c.open) c.send(msg); }catch(e){} }
 function broadcast(){ const m = stateMsg(); students.forEach(s => send(s.conn, m)); }
@@ -552,7 +624,10 @@ function resetRound(){
   broadcast(); renderTeacher();
 }
 function ensureQ(){
-  if (!curQ) { curQ = { id: Date.now(), at: new Date().toISOString(), right:null, wrong:[], order:[] }; LOG.questions.push(curQ); }
+  if (!curQ) {
+    curQ = { id: Date.now(), at: new Date().toISOString(), right:null, wrong:[], order:[], rp: settings.rightPts, wp: settings.wrongPts };
+    LOG.questions.push(curQ);
+  }
 }
 function syncLog(){
   if (curQ) curQ.order = state.order.map(o => o.name);
@@ -603,8 +678,10 @@ function renderStage(){
     time = '지금 누르는 친구에게 기회가 가요';
   } else if (state.phase === 'done') {
     const r = state.order.find(o => o.cid === state.rightCid);
-    msg = '⭕ 정답!'; win = r ? r.name : '';
+    msg = `⭕ 정답! +${curPts().r}점`; win = r ? r.name : '';
   }
+  $('st-pts').textContent = (state.phase === 'done' ? '다음 문제  ' : '이번 문제  ')
+    + (state.phase === 'done' ? ptsText(settings.rightPts, settings.wrongPts) : ptsText(curPts().r, curPts().w));
   $('stage').className = 'stage ' + cls;
   $('st-msg').textContent = msg; $('st-winner').textContent = win; $('st-time').textContent = time;
   $('b-arm').textContent = state.phase === 'idle' ? '▶ 버저 켜기' : '▶ 다음 문제';
@@ -663,12 +740,14 @@ function openQR(){
 function openLog(){ renderSettings(); renderLog(); openModal('m-log'); }
 function scores(){
   const m = new Map();
-  const get = n => { if (!m.has(n)) m.set(n, { name:n, right:0, wrong:0, early:0 }); return m.get(n); };
+  const get = n => { if (!m.has(n)) m.set(n, { name:n, right:0, wrong:0, early:0, score:0 }); return m.get(n); };
   LOG.roster.forEach(get);
-  LOG.questions.forEach(q => { if (q.right) get(q.right).right++; q.wrong.forEach(n => get(n).wrong++); });
+  LOG.questions.forEach(q => {
+    if (q.right) { const g = get(q.right); g.right++; g.score += q.rp; }
+    q.wrong.forEach(n => { const g = get(n); g.wrong++; g.score -= q.wp; });
+  });
   Object.entries(LOG.early).forEach(([n, c]) => get(n).early = c);
   const arr = [...m.values()];
-  arr.forEach(r => r.score = r.right - (settings.wrongMinus ? r.wrong : 0));
   arr.sort((a,b) => b.score - a.score || b.right - a.right || a.wrong - b.wrong || a.name.localeCompare(b.name, 'ko'));
   let prev = null, rank = 0;
   arr.forEach((r, i) => { if (r.score !== prev) rank = i + 1; prev = r.score; r.rank = rank; });
@@ -676,17 +755,16 @@ function scores(){
 }
 const hhmm = iso => { const d = new Date(iso); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); };
 function renderLog(){
-  $('score-rule').textContent = settings.wrongMinus ? '점수 = 정답 수 − 오답 수' : '점수 = 정답 수';
   const sc = scores();
   $('score-tbl').innerHTML = '<tr><th class="c">순위</th><th>이름</th><th class="c">⭕ 정답</th><th class="c">❌ 오답</th><th class="c">점수</th><th class="c">🔒 미리누름</th></tr>' +
     (sc.length ? sc.map(r => `<tr><td class="c">${r.rank}</td><td>${esc(r.name)}</td><td class="c">${r.right}</td><td class="c">${r.wrong}</td><td class="c"><b>${r.score}</b></td><td class="c">${r.early || ''}</td></tr>`).join('')
                : '<tr><td colspan="6" class="muted">아직 기록이 없어요</td></tr>');
   const qs = LOG.questions;
   $('q-count').textContent = qs.length ? `(${qs.length}문제)` : '';
-  $('q-tbl').innerHTML = '<tr><th class="c">문제</th><th>시간</th><th>⭕ 정답자</th><th>❌ 오답자</th><th>누른 순서</th><th></th></tr>' +
+  $('q-tbl').innerHTML = '<tr><th class="c">문제</th><th>시간</th><th class="c">배점</th><th>⭕ 정답자</th><th>❌ 오답자</th><th>누른 순서</th><th></th></tr>' +
     (qs.length ? qs.map((q, i) => ({ q, i })).reverse().map(({ q, i }) =>
-      `<tr><td class="c">${i+1}</td><td>${hhmm(q.at)}</td><td>${q.right ? esc(q.right) : '<span class="muted">없음</span>'}</td><td>${esc(q.wrong.join(', '))}</td><td class="ord">${esc(q.order.join(' → '))}</td><td><button class="del" title="이 기록 지우기" onclick="delQ(${q.id})">✕</button></td></tr>`).join('')
-               : '<tr><td colspan="6" class="muted">정답·오답을 판정하면 여기에 쌓여요</td></tr>');
+      `<tr><td class="c">${i+1}</td><td>${hhmm(q.at)}</td><td class="c">+${q.rp} / ${q.wp ? '−' + q.wp : '0'}</td><td>${q.right ? esc(q.right) + ` <span class="muted">(+${q.rp})</span>` : '<span class="muted">없음</span>'}</td><td>${q.wrong.length ? esc(q.wrong.join(', ')) + (q.wp ? ` <span class="muted">(−${q.wp})</span>` : '') : ''}</td><td class="ord">${esc(q.order.join(' → '))}</td><td><button class="del" title="이 기록 지우기" onclick="delQ(${q.id})">✕</button></td></tr>`).join('')
+               : '<tr><td colspan="7" class="muted">정답·오답을 판정하면 여기에 쌓여요</td></tr>');
 }
 function delQ(id){
   LOG.questions = LOG.questions.filter(q => q.id !== id);
@@ -711,8 +789,8 @@ function downloadCSV(){
   const rows = [['순위','이름','정답','오답','점수','미리누름']];
   scores().forEach(r => rows.push([r.rank, r.name, r.right, r.wrong, r.score, r.early]));
   rows.push([]);
-  rows.push(['문제','시간','정답자','오답자','누른 순서']);
-  LOG.questions.forEach((x, i) => rows.push([i+1, hhmm(x.at), x.right || '', x.wrong.join(', '), x.order.join(' → ')]));
+  rows.push(['문제','시간','정답 점수','오답 감점','정답자','오답자','누른 순서']);
+  LOG.questions.forEach((x, i) => rows.push([i+1, hhmm(x.at), x.rp, x.wp ? -x.wp : 0, x.right || '', x.wrong.join(', '), x.order.join(' → ')]));
   const csv = '﻿' + rows.map(r => r.map(q).join(',')).join('\r\n');
   const d = new Date(), ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const a = document.createElement('a');
@@ -863,6 +941,7 @@ function onStudentData(d){
     case 'state':
       sState = d;
       if (d.penalty === 'none') lockUntil = 0;
+      renderPts();
       renderBuzz();
       break;
     case 'lock':
@@ -874,6 +953,18 @@ function onStudentData(d){
       lockUntil = 0; renderBuzz();
       break;
   }
+}
+
+let lastPtsKey = '';
+function renderPts(){
+  if (sState.rp == null) return;
+  const done = sState.phase === 'done';
+  const r = done ? sState.nrp : sState.rp, w = done ? sState.nwp : sState.wp;
+  const el = $('s-pts');
+  el.textContent = (done ? '다음 문제  ' : '이번 문제  ') + ptsText(r, w);
+  const key = r + '/' + w;
+  if (lastPtsKey && key !== lastPtsKey) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+  lastPtsKey = key;
 }
 
 function ruleText(){
@@ -900,7 +991,7 @@ function renderBuzz(){
     cls = 'ready'; txt = '준비…'; msg = '아직 누르면 안 돼요! 빨간색이 되면 눌러요';
   } else if (sState.phase === 'done') {
     const r = order.find(o => o.cid === sState.rightCid);
-    if (sState.rightCid === myCid) { cls = 'win'; txt = '정답! 🎉'; msg = '멋져요! 다음 문제를 기다려요'; }
+    if (sState.rightCid === myCid) { cls = 'win'; txt = `정답! 🎉<br>+${sState.rp}점`; msg = '멋져요! 다음 문제를 기다려요'; }
     else { cls = 'lose'; txt = '다음 기회에'; msg = (r ? `${r.name} 친구가 맞혔어요` : '') + ruleText(); }
   } else if (idx === -1) {            // 아직 안 누름
     if (pressedRound === sState.round) { cls = 'sent'; txt = '눌렀어요!'; msg = '순서를 확인하는 중…'; }
@@ -911,7 +1002,7 @@ function renderBuzz(){
   } else if (idx === sState.turn) {   // 내 차례
     cls = 'win'; txt = `${idx+1}등<br>내 차례!`; msg = '정답을 말해 주세요!'; myTurn = true;
   } else if (idx < sState.turn) {     // 오답 처리됨
-    cls = 'lose'; txt = '아쉬워요'; msg = cur ? `${cur.name} 친구에게 기회가 넘어갔어요` : '다음 기회에!';
+    cls = 'lose'; txt = sState.wp ? `아쉬워요<br>−${sState.wp}점` : '아쉬워요'; msg = cur ? `${cur.name} 친구에게 기회가 넘어갔어요` : '다음 기회에!';
   } else {                            // 순서 대기
     cls = 'wait'; txt = `${idx+1}등`; msg = `앞에 ${idx - sState.turn}명 있어요. 기다려요!`;
   }
